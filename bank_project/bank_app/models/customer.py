@@ -15,3 +15,4 @@ class Customer(models.Model):
         default = Rank.BASIC,
         max_length=6
     )
+    created_at = models.DateTimeField(auto_now_add=True)
