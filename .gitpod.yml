@@ -1,9 +1,10 @@
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
 tasks:
-  - name: 'Install python 3.9.13'
-    command: pyenv install 3.9.13
-  - name: 'Create and activate virtual environment'
-    command:  python3.9 virtualenv django-env /workspace/venv
+  - name: Create and activate venv
+    init: | 
+      pyenv install 3.9.13
+      python3.9 virtualenv django-env /workspace/venv
+    command: source /workspace/venv/django-env/bin/activate
 
 vscode:
   extensions:
