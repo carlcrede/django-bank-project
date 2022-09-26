@@ -3,7 +3,7 @@ tasks:
   - name: Create and activate venv
     init: | 
       pyenv install 3.9.13
-      python3.9 virtualenv django-env /workspace/venv
+      python -m venv django-env /workspace/venv --upgrade-deps
     command: source /workspace/venv/django-env/bin/activate
 
 vscode:
