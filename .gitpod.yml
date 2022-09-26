@@ -1,0 +1,3 @@
+tasks:
+  - name: Activate py env
+    command: source ../venv/bin/activate
