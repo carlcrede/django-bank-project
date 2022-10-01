@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Document</title>
+</head>
+<body>
+   <h1>Create Customer Account</h1>
+   <hr />
+   <form action="{% url 'bank_app:create_customer' %}" method="POST">
+      {% csrf_token %}
+      <input type="text" name="user_name" placeholder="User Name">
+      <input type="text" name="first_name" placeholder="First Name">
+      <input type="text" name="last_name" placeholder="Last Name">
+      <input type="text" name="phone" placeholder="Phone">
+      <select name="rank">
+        <option value="BASIC" selected>Basic</option>
+        <option value="SILVER">Silver</option>
+        <option value="GOLD">Gold</option>
+    </select>
+      <input type="email" name="email" placeholder="Email Address">
+      <input type="password" name="password" placeholder="Password">
+      <input type="password" name="confirm_password" placeholder="Confirm Password">
+      <button>Create</button>
+   </form>
+   <hr />
+   {% if error %}
+      {{ error }}
+   {% endif %}
+</body>
+</html>
