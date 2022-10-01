@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Document</title>
+</head>
+<body>
+   <h1>Create Customer Account</h1>
+   <hr />
+   <form action="{% url 'bank_app:create_account' %}" method="POST">
+      {% csrf_token %}
+      <input type="text" name="name" placeholder="Account Name">
+      <input type="text" name="customer" placeholder="Customer UserName">
+      <button>Create</button>
+   </form>
+   <hr />
+   {% if error %}
+      {{ error }}
+   {% endif %}
+</body>
+</html>

@@ -53,3 +53,12 @@ def create_customer(request):
                 'error': 'Passwords did not match. Please try again.'
             }
     return render(request, 'bank_app/create_customer.html', context)
+
+def create_account(request):
+    context = {}
+    if request.method == "POST":
+        customer_username = request.POST['customer']
+        account_name = request.POST['name']
+        Employee.create_account(customer_username, account_name)
+        return HttpResponseRedirect(reverse('bank_app:index'))
+    return render(request, 'bank_app/create_account.html', context)
