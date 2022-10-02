@@ -16,4 +16,8 @@ class Customer(models.Model):
         max_length=6
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    
     # customer_uuid
+
+    def __str__(self) -> str:
+        return f"{self.user.last_name}, {self.user.first_name} - {self.rank}"
