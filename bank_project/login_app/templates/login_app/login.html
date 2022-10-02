@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Login</title>
-</head>
-<body>
+{% extends "bank_app/base.html" %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
    <h1>Login</h1>
    <hr />
       <form action="{% url 'login_app:login' %}" method="POST">
@@ -18,5 +14,4 @@
    {% if error %}
       {{ error }}
    {% endif %}
-</body>
-</html>
+{% endblock %}
