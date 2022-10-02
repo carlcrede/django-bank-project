@@ -16,3 +16,4 @@ class Customer(models.Model):
         max_length=6
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    # customer_uuid
