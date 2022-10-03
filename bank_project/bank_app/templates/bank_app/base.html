@@ -9,8 +9,10 @@
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
+    {% load static %}
     <nav>
-        <a href="/bank">Home</a>
+        <a href="{% url 'bank_app:index' %}"><img width="40" src="{% static 'bank_app/logo-icon.png' %}" alt=""></a>
+        <a href="{% url 'bank_app:index' %}">Home</a>
         {% if user.is_authenticated %}
             <a href="{% url 'login_app:logout' %}">Logout</a>
         {% else %}
@@ -18,8 +20,20 @@
         {% endif %}
     </nav>
 
+    <header>
+        <img width="200" src="{% static 'bank_app/logo.png' %}" alt="Bank Logo">
+    </header>
+
+    <hr>
+
     {% block content %}{% endblock %}
-    {% block footer %}{% endblock %}
+    {% block footer %}
+        <footer>
+            <center>
+                <p>Django Bank - &copy; - {% now 'F Y' %}</p>
+            </center>
+        </footer>
+    {% endblock %}
 
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {

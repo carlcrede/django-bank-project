@@ -17,7 +17,7 @@
         <tbody>
             {% for account in accounts %}
                 <tr>
-                    <td>{{ account.pk }}</td>
+                    <td><a href="{% url 'bank_app:account_details' account.pk %}">{{ account.pk }}</a></td>
                     <td>{{ account.name }}</td>
                 </tr>
             {% endfor %}
