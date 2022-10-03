@@ -5,7 +5,7 @@ from .account import Account
 import uuid
 
 class Employee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.PROTECT)
 
     @classmethod
     def create_employee(cls, fname, lname, email, uname, passwd):
