@@ -1,10 +1,12 @@
 from django.shortcuts import render, reverse
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
 from django.http import HttpResponseRedirect
-
+from django.contrib.auth.decorators import login_required
 
 def login(request):
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('bank_app:index'))
+    
     context = {}
 
     if request.method == "POST":
@@ -19,7 +21,7 @@ def login(request):
             }
     return render(request, 'login_app/login.html', context)
 
-
+@login_required
 def logout(request):
     dj_logout(request)
     return render(request, 'login_app/login.html')

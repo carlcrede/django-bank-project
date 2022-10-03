@@ -1,0 +1,42 @@
+{% extends "bank_app/base.html" %}
+
+{% block content %}
+    <p><a href="{% url 'bank_app:index' %}">Back</a></p>
+    <article>
+        <h2>Account Details</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Account Number</th>
+                    <th>Account Name</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ account.pk}} </td>
+                    <td>{{ account.name }}</td>
+                    <td>Dummy balance</td>
+                </tr>
+            </tbody>
+        </table>
+    </article>
+
+    <article>
+        <h2>Account Transactions (not implemented)</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    
+                </tr>
+            </tbody>
+        </table>
+    </article>
+{% endblock %}

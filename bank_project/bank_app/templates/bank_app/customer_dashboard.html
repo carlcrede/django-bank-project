@@ -1,0 +1,48 @@
+{% extends "bank_app/base.html" %}
+
+{% block title %}Bank App{% endblock %}
+
+{% block content %}
+
+<p>Welcome, {{ user.customer.full_name }}</p>
+<article>
+    <h2>My Accounts</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td><a href="{% url 'bank_app:account_details' account.pk %}">{{ account.pk }}</a></td>
+                    <td>{{ account.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+<article>
+    <h2>My Loans</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+                <tr>
+                    <td>{{ loan.pk }}</td>
+                    <td>{{ loan.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% endblock %}

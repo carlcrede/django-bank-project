@@ -1,10 +1,37 @@
-from django.shortcuts import render, reverse
+from django.shortcuts import get_object_or_404, render, reverse
 from django.http import HttpResponseRedirect
-from .models import Employee
-from .models import Customer
+from django.contrib.auth.decorators import login_required
+from .models import Employee, Account
 
+@login_required
 def index(request):
-    return render(request, 'bank_app/index.html', {})
+    if hasattr(request.user, 'employee'):
+        print("employee")
+        # return HttpResponseRedirect(reverse('bank:staff_dashboard'))
+    elif hasattr(request.user, 'customer'):
+        return HttpResponseRedirect(reverse('bank_app:customer_dashboard'))
+
+    return render(request, 'bank_app/error.html', {'error': 'Fatal error. Should never happen'})
+
+@login_required
+def customer_dashboard(request):
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+
+    accounts = request.user.customer.accounts
+    context = {
+        'accounts': accounts,
+    }
+    return render(request, 'bank_app/customer_dashboard.html', context)
+
+@login_required
+def account_details(request, pk):
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+
+    account = get_object_or_404(Account, customer=request.user.customer, pk=pk)
+    context = {
+        'account': account
+    }
+    return render(request, 'bank_app/account_details.html', context)
 
 def create_employee(request):
     context = {}
