@@ -8,7 +8,7 @@ class Customer(models.Model):
         SILVER = 'SILVER', 'Silver'
         GOLD = 'GOLD', 'Gold'
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.PROTECT)
     phone = models.CharField(max_length=8)
     rank = models.CharField(
         choices = Rank.choices,
