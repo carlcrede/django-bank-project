@@ -4,7 +4,25 @@ from .models import Employee
 from .models import Customer
 
 def index(request):
+    # print(type(request.user))
+    if hasattr(request.user, 'employee'):
+        print("employee")
+        # return HttpResponseRedirect(reverse('bank:staff_dashboard'))
+    else:
+        print("customer")
+        return HttpResponseRedirect(reverse('bank_app:customer_dashboard'))
+
     return render(request, 'bank_app/index.html', {})
+
+def customer_dashboard(request):
+    # assert not hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    print("here")
+    accounts = request.user.customer.accounts
+    context = {
+        'accounts': accounts,
+    }
+    return render(request, 'bank_app/customer_dashboard.html', context)
+
 
 def create_employee(request):
     context = {}
