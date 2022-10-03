@@ -11,8 +11,13 @@
 <body>
     <nav>
         <a href="/bank">Home</a>
-        <a href="/accounts/login">Login</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'login_app:logout' %}">Logout</a>
+        {% else %}
+            <a href="{% url 'login_app:login' %}">Login</a>
+        {% endif %}
     </nav>
+
     {% block content %}{% endblock %}
     {% block footer %}{% endblock %}
 

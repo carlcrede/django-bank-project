@@ -3,12 +3,46 @@
 {% block title %}Bank App{% endblock %}
 
 {% block content %}
-<h1>Customer Accounts </h1>
-{% for account in accounts %}
-<tr>
-    {% comment %} <td><a href="{% url 'bank:account_details' account.pk %}">{{ account.pk }}</a></td> {% endcomment %}
-    <td>{{ account.name }}</td>
-</tr>
-{% endfor %}
+
+<p>Welcome, {{ user.customer.full_name }}</p>
+<article>
+    <h2>My Accounts</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td>{{ account.pk }}</td>
+                    <td>{{ account.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+<article>
+    <h2>My Loans</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+                <tr>
+                    <td>{{ loan.pk }}</td>
+                    <td>{{ loan.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
 
 {% endblock %}

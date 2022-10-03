@@ -1,22 +1,22 @@
 from django.shortcuts import render, reverse
 from django.http import HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
 from .models import Employee
-from .models import Customer
 
+@login_required
 def index(request):
-    # print(type(request.user))
     if hasattr(request.user, 'employee'):
         print("employee")
         # return HttpResponseRedirect(reverse('bank:staff_dashboard'))
-    else:
-        print("customer")
+    elif hasattr(request.user, 'customer'):
         return HttpResponseRedirect(reverse('bank_app:customer_dashboard'))
 
-    return render(request, 'bank_app/index.html', {})
+    return render(request, 'bank_app/error.html', {'error': 'Fatal error. Should never happen'})
 
+@login_required
 def customer_dashboard(request):
-    # assert not hasattr(request.user, 'customer'), 'Staff user routing customer view.'
-    print("here")
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+
     accounts = request.user.customer.accounts
     context = {
         'accounts': accounts,

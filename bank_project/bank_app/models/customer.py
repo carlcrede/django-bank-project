@@ -27,5 +27,13 @@ class Customer(models.Model):
         return f"{self.user.last_name}, {self.user.first_name} - {self.rank}"
 
     @property
-    def accounts(self):
-        return Account.objects.filter(user=self.user)
+    def accounts(self) -> QuerySet:
+        return Account.objects.filter(customer=self, is_loan=False)
+
+    @property
+    def loans(self) -> QuerySet:
+        return Account.objects.filter(customer=self, is_loan=True)
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.user.first_name} {self.user.last_name}"
