@@ -1,0 +1,12 @@
+{% extends 'bank_app/base.html' %}
+
+{% block content %}
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<form action="{% url 'bank_app:make_transfer' %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        {{ form }}
+    <button>Make Transfer</button>
+    </fieldset>
+</form>
+{% endblock %}

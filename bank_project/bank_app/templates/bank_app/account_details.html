@@ -1,10 +1,10 @@
 {% extends "bank_app/base.html" %}
 
 {% block content %}
-    <p><a href="{% url 'bank_app:index' %}">Back</a></p>
+{% include 'bank_app/customer_dashboard_nav.html' %}
     <article>
         <h2>Account Details</h2>
-
+        
         <table>
             <thead>
                 <tr>
@@ -17,25 +17,34 @@
                 <tr>
                     <td>{{ account.pk}} </td>
                     <td>{{ account.name }}</td>
-                    <td>Dummy balance</td>
+                    <td>{{ account.balance }}</td>
                 </tr>
             </tbody>
         </table>
+        <p><a href="{% url 'bank_app:index' %}">Back</a></p>
     </article>
 
     <article>
-        <h2>Account Transactions (not implemented)</h2>
+        <h2>Account Transactions</h2>
 
         <table>
             <thead>
                 <tr>
-                    
+                    <th>Transaction ID</th>
+                    <th>Amount</th>
+                    <th>Text</th>
+                    <th>Timestamp</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    
-                </tr>
+                {% for m in account.movements %}
+                    <tr>
+                        <td>{{ m.pk }}</td>
+                        <td>{{ m.amount }}</td>
+                        <td>{{ m.text }}</td>
+                        <td>{{ m.created_at|date:'Y-n-d H:i' }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </article>

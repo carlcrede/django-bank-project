@@ -1,7 +1,11 @@
 from django.shortcuts import get_object_or_404, render, reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from .models import Employee, Account
+
+from .errors import InsufficientFunds
+
+from .forms import TransferForm
+from .models import Employee, Account, Ledger
 
 @login_required
 def index(request):
@@ -32,6 +36,38 @@ def account_details(request, pk):
         'account': account
     }
     return render(request, 'bank_app/account_details.html', context)
+
+@login_required
+def make_transfer(request):
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+
+    if request.method == 'POST':
+        form = TransferForm(request.POST)
+        form.fields['debit_account'].queryset = request.user.customer.accounts
+        if form.is_valid():
+            amount = form.cleaned_data['amount']
+            debit_account = Account.objects.get(pk=form.cleaned_data['debit_account'].pk)
+            debit_text = form.cleaned_data['debit_text']
+            credit_account = Account.objects.get(pk=form.cleaned_data['credit_account'])
+            credit_text = form.cleaned_data['credit_text']
+            try:
+                transfer = Ledger.transfer(amount, debit_account, debit_text, credit_account, credit_text)
+                return account_details(request, pk=debit_account.pk)
+            except InsufficientFunds:
+                context = {
+                    'title': 'Transfer error',
+                    'error': 'Insufficient funds for transfer'
+                }
+                return render(request, 'bank_app/error.html', context)
+
+    else:
+        form = TransferForm()
+    
+    form.fields['debit_account'].queryset = request.user.customer.accounts
+    context = {
+        'form': form
+    }
+    return render(request, 'bank_app/make_transfer.html', context)
 
 def create_employee(request):
     context = {}

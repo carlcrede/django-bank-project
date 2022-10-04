@@ -1,5 +1,8 @@
 {% extends "bank_app/base.html" %}
 
 {% block content %}
-    {% error %}
+    {% if title %}
+    <h3>{{ title }}</h3>
+    {% endif %}
+    <p>{{ error }}</p>
 {% endblock %}
