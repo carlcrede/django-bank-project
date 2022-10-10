@@ -1,8 +1,10 @@
 {% extends "bank_app/base.html" %}
 
-{% block title %}Bank App{% endblock %}
+{% block title %}Customer Dashboard{% endblock %}
 
 {% block content %}
+
+{% include 'bank_app/customer_dashboard_nav.html' %}
 
 <p>Welcome, {{ user.customer.full_name }}</p>
 <article>
@@ -17,7 +19,7 @@
         <tbody>
             {% for account in accounts %}
                 <tr>
-                    <td><a href="{% url 'bank_app:account_details' account.pk %}">{{ account.pk }}</a></td>
+                    <td><a style="display: block;" href="{% url 'bank_app:account_details' account.pk %}">{{ account.pk }}</a></td>
                     <td>{{ account.name }}</td>
                 </tr>
             {% endfor %}
