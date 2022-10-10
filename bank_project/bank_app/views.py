@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render, reverse
+from django.shortcuts import HttpResponse, get_object_or_404, render, reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 
@@ -36,6 +36,17 @@ def account_details(request, pk):
         'account': account
     }
     return render(request, 'bank_app/account_details.html', context)
+
+@login_required
+def transaction_details(request, transaction_id):
+    t = Ledger.objects.filter(transaction_id=transaction_id)
+    credit = ...
+    debit = ...
+    context = {
+        'transaction': t,
+        'transaction_id': transaction_id
+    }
+    return render(request, 'bank_app/transaction_details.html', context)
 
 @login_required
 def make_transfer(request):

@@ -21,3 +21,6 @@ class Account(models.Model):
     @property
     def movements(self) -> QuerySet:
         return Ledger.objects.filter(account=self).order_by('-created_at')
+
+    def __str__(self) -> str:
+        return f'({self.pk}) {self.name}'

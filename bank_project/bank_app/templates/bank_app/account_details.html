@@ -1,5 +1,9 @@
 {% extends "bank_app/base.html" %}
 
+{% load humanize %}
+
+{% block title %}Account details - {{ account.name }}{% endblock %}
+
 {% block content %}
 {% include 'bank_app/customer_dashboard_nav.html' %}
     <article>
@@ -11,13 +15,15 @@
                     <th>Account Number</th>
                     <th>Account Name</th>
                     <th>Balance</th>
+                    <th>Created</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>{{ account.pk}} </td>
                     <td>{{ account.name }}</td>
-                    <td>{{ account.balance }}</td>
+                    <td>{{ account.balance|intcomma }}</td>
+                    <td>{{ account.created_at|date:'Y-n-d' }}</td>
                 </tr>
             </tbody>
         </table>
@@ -39,8 +45,15 @@
             <tbody>
                 {% for m in account.movements %}
                     <tr>
-                        <td>{{ m.pk }}</td>
-                        <td>{{ m.amount }}</td>
+                        <td><a 
+                            hx-trigger="click"
+                            hx-get="{% url 'bank_app:transaction_details' m.transaction_id %}"
+                            hx-target="#transaction_details"
+                            style="display: block;"
+                            href=""
+                            >{{ m.pk }}
+                        </a></td>
+                        <td>{{ m.amount|intcomma }}</td>
                         <td>{{ m.text }}</td>
                         <td>{{ m.created_at|date:'Y-n-d H:i' }}</td>
                     </tr>
@@ -48,4 +61,5 @@
             </tbody>
         </table>
     </article>
+    <article id="transaction_details"></article>
 {% endblock %}
