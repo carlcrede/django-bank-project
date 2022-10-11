@@ -3,6 +3,9 @@ import os
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from bank_app.models import Employee, Account, Ledger, Customer
+from faker import Faker
+fake = Faker(['da_DK'])
+Faker.seed(0)
 
 
 class Command(BaseCommand):
@@ -33,11 +36,12 @@ class Command(BaseCommand):
         )
 
         # Create Employee User
-        dummy_employee = Employee.create_employee(fname='Donald', lname='Duck', email='donald@duck.com', uname='donaldd', passwd='mirror12')
+
+        dummy_employee = Employee.create_employee(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='dummyemp', passwd='mirror12')
 
         # Create Customer User with 2 Accounts
-        dummy_customer = Employee.create_customer(fname='John', lname='Doe', email='john@doe.com', uname='johndoe', phone='12345678', passwd='mirror12')
-        dummy_customer_account1 = Employee.create_account(customer_username='johndoe', acc_name= "Checking account")
+        dummy_customer = Employee.create_customer(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='johndoe', phone=fake.phone_number(), passwd='mirror12')
+        dummy_customer_account1 = Employee.create_account(customer_username='johndoe', acc_name="Checking Account")
         dummy_customer_account2 = Employee.create_account(customer_username='johndoe', acc_name= "Savings account")
 
         # Transfer funds to customers account
@@ -50,7 +54,7 @@ class Command(BaseCommand):
         )
 
         # Create another Customer User with 2 Accounts
-        dummy_customer2 = Employee.create_customer(fname='John', lname='Cena', email='john@ucl.com', uname='cena', phone='12345678', passwd='mirror12')
+        dummy_customer2 = Employee.create_customer(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='cena', phone=fake.phone_number(), passwd='mirror12')
         dummy_customer2_account1 = Employee.create_account(customer_username='cena', acc_name= "GAINS")
         dummy_customer2_account2 = Employee.create_account(customer_username='cena', acc_name= "Millionaire Account")
 

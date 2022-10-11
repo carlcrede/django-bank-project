@@ -27,8 +27,7 @@ class Employee(models.Model):
     def create_account(cls,  customer_username, acc_name):
         user = User.objects.get(username=customer_username)
         customer = Customer.objects.get(user=user)
-        account_uuid = uuid.uuid4()
-        new_account = Account.objects.create(name=acc_name, account_uuid=account_uuid, customer=customer)
+        new_account = Account.objects.create(name=acc_name, customer=customer)
         return new_account
         
 

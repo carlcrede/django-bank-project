@@ -12,6 +12,7 @@ def index(request):
     if hasattr(request.user, 'employee'):
         print("employee")
         # return HttpResponseRedirect(reverse('bank:staff_dashboard'))
+        raise NotImplementedError()
     elif hasattr(request.user, 'customer'):
         return HttpResponseRedirect(reverse('bank_app:customer_dashboard'))
 
@@ -28,10 +29,10 @@ def customer_dashboard(request):
     return render(request, 'bank_app/customer_dashboard.html', context)
 
 @login_required
-def account_details(request, pk):
+def account_details(request, ban):
     assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
 
-    account = get_object_or_404(Account, customer=request.user.customer, pk=pk)
+    account = get_object_or_404(Account, customer=request.user.customer, pk=ban)
     context = {
         'account': account
     }
@@ -40,10 +41,11 @@ def account_details(request, pk):
 @login_required
 def transaction_details(request, transaction_id):
     t = Ledger.objects.filter(transaction_id=transaction_id)
-    credit = ...
-    debit = ...
+    credit = t[0] if t[0].amount > 0 else t[1]
+    debit =  t[0] if t[0].amount <= 0 else t[1]
     context = {
-        'transaction': t,
+        'credit': credit,
+        'debit': debit,
         'transaction_id': transaction_id
     }
     return render(request, 'bank_app/transaction_details.html', context)

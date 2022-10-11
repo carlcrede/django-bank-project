@@ -5,20 +5,36 @@
 <table>
     <thead>
         <tr>
-            <th>Amount</th>
-            <th>Text</th>
-            <th>Account</th>
+            <th>Debit amount</th>
+            <th>Debit text</th>
+            <th>Debit account</th>
             <th>Timestamp</th>
         </tr>
     </thead>
     <tbody>
-        {% for t in transaction %}
-            <tr>
-                <td>{{ t.amount|intcomma }}</td>
-                <td>{{ t.text }}</td>
-                <td>{{ t.account.pk }}</td>
-                <td>{{ t.created_at|date:'Y-n-d H:i' }}</td>
-            </tr>
-        {% endfor %}
+        <tr>
+            <td>{{ debit.amount|intcomma }}</td>
+            <td>{{ debit.text }}</td>
+            <td>{{ debit.account.pk }}</td>
+            <td>{{ debit.created_at|date:'Y-n-d H:i' }}</td>
+        </tr>
+    </tbody>
+</table>
+<table>
+    <thead>
+        <tr>
+            <th>Credit amount</th>
+            <th>Credit text</th>
+            <th>Credit account</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ credit.amount|intcomma }}</td>
+            <td>{{ credit.text }}</td>
+            <td>{{ credit.account.pk }}</td>
+            <td>{{ credit.created_at|date:'Y-n-d H:i' }}</td>
+        </tr>
     </tbody>
 </table>
