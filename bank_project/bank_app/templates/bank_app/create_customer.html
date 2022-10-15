@@ -1,7 +1,10 @@
 {% extends "bank_app/base.html" %}
 
 {% block content %}
-   <h1>Create Customer Profile</h1>
+
+{% include 'bank_app/employee_dashboard_nav.html' %}
+
+   <h1>Create Customer </h1>
    <hr />
    <form action="{% url 'bank_app:create_customer' %}" method="POST">
       {% csrf_token %}
