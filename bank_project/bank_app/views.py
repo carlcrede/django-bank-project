@@ -5,14 +5,14 @@ from django.contrib.auth.decorators import login_required
 from .errors import InsufficientFunds
 
 from .forms import TransferForm
-from .models import Employee, Account, Ledger
+from .models import Employee, Account, Ledger, Customer
 
 @login_required
 def index(request):
     if hasattr(request.user, 'employee'):
         print("employee")
         # return HttpResponseRedirect(reverse('bank:staff_dashboard'))
-        raise NotImplementedError()
+        return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
     elif hasattr(request.user, 'customer'):
         return HttpResponseRedirect(reverse('bank_app:customer_dashboard'))
 
@@ -27,6 +27,16 @@ def customer_dashboard(request):
         'accounts': accounts,
     }
     return render(request, 'bank_app/customer_dashboard.html', context)
+    
+@login_required
+def employee_dashboard(request):
+    assert hasattr(request.user, 'employee'), 'Staff user routing customer view.'
+
+    customers = Customer.objects.all()
+    context = {
+        'customers': customers,
+    }
+    return render(request, 'bank_app/employee_dashboard.html', context)
 
 @login_required
 def account_details(request, ban):
@@ -138,3 +148,19 @@ def create_account(request):
         Employee.create_account(customer_username, account_name)
         return HttpResponseRedirect(reverse('bank_app:index'))
     return render(request, 'bank_app/create_account.html', context)
+
+def create_customer_account(request, customer_username):
+    context = {'customer_username': customer_username}
+    if request.method == "POST":
+        account_name = request.POST['name']
+        Employee.create_account(customer_username, account_name)
+        return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
+    return render(request, 'bank_app/create_customer_account.html', context)
+
+def rerank_customer(request, customer_username):
+    context = {'customer_username': customer_username}
+    if request.method == "POST":
+        rank = request.POST['rank']
+        Employee.rerank_customer(customer_username, rank)
+        return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
+    return render(request, 'bank_app/rerank_customer.html', context)

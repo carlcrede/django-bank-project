@@ -1,0 +1,22 @@
+{% extends "bank_app/base.html" %}
+
+{% block content %}
+
+{% include 'bank_app/employee_dashboard_nav.html' %}
+
+   <h1>Change Customer Rank</h1>
+   <hr />
+   <form action="{% url 'bank_app:rerank_customer' customer_username %}" method="POST">
+      {% csrf_token %}
+      <select name="rank">
+         <option value="BASIC" selected>Basic</option>
+         <option value="SILVER">Silver</option>
+         <option value="GOLD">Gold</option>
+      </select>
+      <button>Change Rank</button>
+   </form>
+   <hr />
+   {% if error %}
+      {{ error }}
+   {% endif %}
+{% endblock %}

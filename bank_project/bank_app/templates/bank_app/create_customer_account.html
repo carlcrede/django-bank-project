@@ -6,10 +6,9 @@
 
    <h1>Create Customer Account</h1>
    <hr />
-   <form action="{% url 'bank_app:create_account' %}" method="POST">
+   <form action="{% url 'bank_app:create_customer_account' customer_username %}" method="POST">
       {% csrf_token %}
       <input type="text" name="name" placeholder="Account Name">
-      <input type="text" name="customer" placeholder="Customer UserName">
       <button>Create</button>
    </form>
    <hr />

@@ -1,0 +1,40 @@
+{% extends "bank_app/base.html" %}
+
+{% block title %}Employee Dashboard{% endblock %}
+
+{% block content %}
+
+{% include 'bank_app/employee_dashboard_nav.html' %}
+
+<p>Welcome, {{ user.employee.full_name }}</p>
+<article>
+    <h2>Customers</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Phone</th>
+                <th>Rank</th>
+                <th>Create account</th>
+                <th>Change rank</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.user.username }}</a></td>
+                    <td>{{ customer.user.first_name }}</td>
+                    <td>{{ customer.user.last_name }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>{{ customer.rank }}</td>
+                    <td><a style="display: block;" href="{% url 'bank_app:create_customer_account' customer.user.username %}">Create account</a></td>
+                    <td><a style="display: block;" href="{% url 'bank_app:rerank_customer' customer.user.username %}">Change rank</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% endblock %}
