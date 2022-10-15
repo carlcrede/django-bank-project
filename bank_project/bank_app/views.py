@@ -150,29 +150,17 @@ def create_account(request):
     return render(request, 'bank_app/create_account.html', context)
 
 def create_customer_account(request, customer_username):
+    context = {'customer_username': customer_username}
     if request.method == "POST":
         account_name = request.POST['name']
         Employee.create_account(customer_username, account_name)
-    context = {
-        'customer_username': customer_username,
-    }
+        return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
     return render(request, 'bank_app/create_customer_account.html', context)
-
-def create_customer_account(request, customer_username):
-    if request.method == "POST":
-        account_name = request.POST['name']
-        Employee.create_account(customer_username, account_name)
-    context = {
-        'customer_username': customer_username,
-    }
-    return render(request, 'bank_app/create_customer_account.html', context)
-
 
 def rerank_customer(request, customer_username):
+    context = {'customer_username': customer_username}
     if request.method == "POST":
         rank = request.POST['rank']
         Employee.rerank_customer(customer_username, rank)
-    context = {
-        'customer_username': customer_username,
-    }
+        return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
     return render(request, 'bank_app/rerank_customer.html', context)
