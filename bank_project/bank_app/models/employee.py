@@ -30,6 +30,13 @@ class Employee(models.Model):
         new_account = Account.objects.create(name=acc_name, customer=customer)
         return new_account
         
+    @classmethod
+    def rerank_customer(cls, customer_username, new_rank):
+        user = User.objects.get(username=customer_username)
+        customer = Customer.objects.get(user=user)
+        customer.rank = new_rank
+        customer.save()
+        return customer
 
     # def __str__(self):
     #         return self.employee
