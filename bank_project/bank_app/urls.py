@@ -16,4 +16,5 @@ urlpatterns = [
    path('create_account/', views.create_account, name='create_account'), # to access it: localhost:8000/bank/create_account
    path('create_customer_account/<str:customer_username>/', views.create_customer_account, name='create_customer_account'), # to access it: localhost:8000/bank/create_customer_account
    path('rerank_customer/<str:customer_username>/', views.rerank_customer, name='rerank_customer'), # to access it: localhost:8000/bank/rerank_customer
+   path('customer_details/<str:customer_username>/', views.customer_details, name='customer_details'), # to access it: localhost:8000/bank/customer_details
 ]

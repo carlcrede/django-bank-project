@@ -1,0 +1,47 @@
+{% extends "bank_app/base.html" %}
+
+{% block content %}
+
+{% include 'bank_app/employee_dashboard_nav.html' %}
+
+<article>
+    <h2>{{ customer.full_name }}'s accounts</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td><a style="display: block;" href="{% url 'bank_app:account_details' account.pk %}">{{ account.pk }}</a></td>
+                    <td>{{ account.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+<article>
+    <h2>{{ customer.full_name }}'s loans</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+                <tr>
+                    <td>{{ loan.pk }}</td>
+                    <td>{{ loan.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% endblock %}
