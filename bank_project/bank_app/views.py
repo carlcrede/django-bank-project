@@ -38,15 +38,24 @@ def employee_dashboard(request):
     }
     return render(request, 'bank_app/employee_dashboard.html', context)
 
+
 @login_required
 def account_details(request, ban):
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
-
-    account = get_object_or_404(Account, customer=request.user.customer, pk=ban)
-    context = {
-        'account': account
-    }
-    return render(request, 'bank_app/account_details.html', context)
+    if hasattr(request.user, 'customer'):
+        'Staff user routing customer view.'
+        account = get_object_or_404(Account, customer=request.user.customer, pk=ban)
+        context = {
+            'is_employee': False,
+            'account': account
+        }
+        return render(request, 'bank_app/account_details.html', context)
+    elif hasattr(request.user, 'employee'):
+        account = get_object_or_404(Account, pk=ban)
+        context = {
+            'is_employee': True,
+            'account': account
+        }
+        return render(request, 'bank_app/account_details.html', context)
 
 @login_required
 def transaction_details(request, transaction_id):
@@ -164,3 +173,12 @@ def rerank_customer(request, customer_username):
         Employee.rerank_customer(customer_username, rank)
         return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
     return render(request, 'bank_app/rerank_customer.html', context)
+
+def customer_details(request, customer_username):
+    customer = get_object_or_404(Customer, user__username=customer_username)
+    accounts = customer.accounts
+    context = {
+        'customer': customer,
+        'accounts': accounts,
+    }
+    return render(request, 'bank_app/customer_details.html', context)

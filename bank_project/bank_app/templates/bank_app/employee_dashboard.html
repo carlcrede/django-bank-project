@@ -24,7 +24,7 @@
         <tbody>
             {% for customer in customers %}
                 <tr>
-                    <td>{{ customer.user.username }}</a></td>
+                    <td><a style="display: block;" href="{% url 'bank_app:customer_details' customer.user.username %}">{{ customer.user.username }}</a></td>
                     <td>{{ customer.user.first_name }}</td>
                     <td>{{ customer.user.last_name }}</td>
                     <td>{{ customer.phone }}</td>
