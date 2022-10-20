@@ -1,0 +1,22 @@
+{% extends 'bank_app/base.html' %}
+
+{% block content %}
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<h1>Get Loan</h1>
+   <hr />
+   <form action="{% url 'bank_app:get_loan' %}" method="POST">
+      {% csrf_token %}
+      <label for="account_options" id="loan_ammount">Choose the account which should receive the loan money: </label>
+      <input type="text" id="loan_ammount" name="amount" placeholder="Input Loan Amount">
+      {% comment %} <input type="text" name="amount" placeholder="Input Account Number, which should receive"> {% endcomment %}
+      <label for="account_options">Choose the account which should receive the loan money: </label>
+      <select name="ban" id="account_options">
+        {% for account in user.customer.accounts %}
+            <option value={{ account.pk }}>{{ account.name}}</option>
+        {% endfor %}
+     </select>
+      {% comment %} <input type="text" name="customer" placeholder="Customer UserName"> {% endcomment %}
+      <button>Create</button>
+   </form>
+   <hr />
+{% endblock %}
