@@ -24,4 +24,4 @@ def login(request):
 @login_required
 def logout(request):
     dj_logout(request)
-    return render(request, 'login_app/login.html')
+    return HttpResponseRedirect(reverse('login_app:login'))
