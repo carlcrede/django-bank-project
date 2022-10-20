@@ -2,11 +2,12 @@
 
 {% block content %}
 {% include 'bank_app/customer_dashboard_nav.html' %}
+<h1>Make Transfer</h1>
 <form action="{% url 'bank_app:make_transfer' %}" method="post">
     {% csrf_token %}
     <fieldset>
         {{ form }}
-    <button>Make Transfer</button>
+    <button>Transfer</button>
     </fieldset>
 </form>
 {% endblock %}

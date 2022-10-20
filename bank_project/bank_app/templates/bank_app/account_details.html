@@ -13,8 +13,11 @@
     {% endif %}
 {% endif %}
     <article>
-        <h2>Account Details</h2>
-        
+        {% if not account.is_loan %}
+            <h2>Account Details</h2>
+        {% else %}
+            <h2>Loan Details</h2>
+        {% endif %}
         <table>
             <thead>
                 <tr>
@@ -37,8 +40,11 @@
     </article>
 
     <article>
-        <h2>Account Transactions</h2>
-
+        {% if not account.is_loan %}
+            <h2>Account Transactions</h2>
+        {% else %}
+            <h2>Loan Transactions</h2>
+        {% endif %}
         <table>
             <thead>
                 <tr>
