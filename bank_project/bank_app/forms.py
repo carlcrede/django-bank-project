@@ -27,3 +27,17 @@ class TransferForm(forms.Form):
             self._errors['amount'] = self.error_class(['Amount must be positive.'])
 
         return self.cleaned_data
+
+class PayLoanForm(forms.Form):
+    amount = forms.DecimalField(label='Amount', max_digits=10)
+    debit_account = forms.ModelChoiceField(label='Debit Account', queryset=Customer.objects.none())
+    debit_text = forms.CharField(label='Debit Text', max_length=200)
+    credit_account = forms.ModelChoiceField(label='Loan Account', queryset=Customer.objects.none())
+    credit_text = forms.CharField(label='Credit Text', max_length=200)
+
+    def clean(self):
+        super().clean()
+        if self.cleaned_data.get('amount') < 0:
+            self._errors['amount'] = self.error_class(['Amount must be positive.'])
+
+        return self.cleaned_data
