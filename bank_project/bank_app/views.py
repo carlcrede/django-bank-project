@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 
 from .errors import InsufficientFunds
 
-from .forms import TransferForm
+from .forms import TransferForm, PayLoanForm
 from .models import Employee, Account, Ledger, Customer
 
 @login_required
@@ -23,8 +23,10 @@ def customer_dashboard(request):
     assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
 
     accounts = request.user.customer.accounts
+    loans = request.user.customer.loans
     context = {
         'accounts': accounts,
+        'loans': loans
     }
     return render(request, 'bank_app/customer_dashboard.html', context)
     
@@ -84,7 +86,8 @@ def make_transfer(request):
             credit_text = form.cleaned_data['credit_text']
             try:
                 transfer = Ledger.transfer(amount, debit_account, debit_text, credit_account, credit_text)
-                return account_details(request, pk=debit_account.pk)
+                # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
+                return account_details(request, ban=debit_account.pk)
             except InsufficientFunds:
                 context = {
                     'title': 'Transfer error',
@@ -100,6 +103,79 @@ def make_transfer(request):
         'form': form
     }
     return render(request, 'bank_app/make_transfer.html', context)
+
+@login_required
+def get_loan(request):
+    context = {}
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    assert ( request.user.customer.rank == 'BASIC'), 'Customer with BASIC rank cannnot make a loan'
+    if request.method == 'POST':
+        print("request.POST: ", request.POST)
+        print("request.user: ", request.user.customer)
+        amount = request.POST['amount']
+        ban = request.POST['ban']
+        print("get_loan: ", amount, ban)
+        customer = Customer.objects.get(user=request.user)
+        loan = customer.get_loan(ban, amount)
+        print("Customer accounts: ", customer.accounts)
+        print("Customer loans: ", customer.loans)
+        print("loan: ", loan)
+        # form = TransferForm(request.POST)
+        # form.fields['debit_account'].queryset = request.user.customer.accounts
+        # if form.is_valid():
+        #     amount = form.cleaned_data['amount']
+        #     debit_account = Account.objects.get(pk=form.cleaned_data['debit_account'].pk)
+        #     debit_text = form.cleaned_data['debit_text']
+        #     credit_account = Account.objects.get(pk=form.cleaned_data['credit_account'])
+        #     credit_text = form.cleaned_data['credit_text']
+        #     try:
+        #         transfer = Ledger.transfer(amount, debit_account, debit_text, credit_account, credit_text)
+        #         return account_details(request, pk=debit_account.pk)
+        #     except InsufficientFunds:
+        #         context = {
+        #             'title': 'Transfer error',
+        #             'error': 'Insufficient funds for transfer'
+        #         }
+        #         return render(request, 'bank_app/error.html', context)
+        # return HttpResponseRedirect(reverse('bank_app:customer_dashboard'))
+
+        return account_details(request, ban=loan.pk)
+    return render(request, 'bank_app/get_loan.html', context)
+
+@login_required
+def pay_loan(request):
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+
+    if request.method == 'POST':
+        form = PayLoanForm(request.POST)
+        form.fields['debit_account'].queryset = request.user.customer.accounts
+        form.fields['credit_account'].queryset = request.user.customer.loans
+        if form.is_valid():
+            amount = form.cleaned_data['amount']
+            debit_account = Account.objects.get(pk=form.cleaned_data['debit_account'].pk)
+            debit_text = form.cleaned_data['debit_text']
+            credit_account = Account.objects.get(pk=form.cleaned_data['credit_account'].pk)
+            credit_text = form.cleaned_data['credit_text']
+            try:
+                transfer = Ledger.transfer(amount, debit_account, debit_text, credit_account, credit_text)
+                return account_details(request, ban=debit_account.pk)
+            except InsufficientFunds:
+                context = {
+                    'title': 'Transfer error',
+                    'error': 'Insufficient funds for transfer'
+                }
+                return render(request, 'bank_app/error.html', context)
+
+    else:
+        form = PayLoanForm()
+    
+    form.fields['debit_account'].queryset = request.user.customer.accounts
+    form.fields['credit_account'].queryset = request.user.customer.loans
+    context = {
+        'form': form
+    }
+    return render(request, 'bank_app/pay_loan.html', context)
+
 
 def create_employee(request):
     context = {}
