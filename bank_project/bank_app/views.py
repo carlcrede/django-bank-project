@@ -113,6 +113,13 @@ def get_loan(request):
         print("request.POST: ", request.POST)
         print("request.user: ", request.user.customer)
         amount = request.POST['amount']
+        if float(amount) < 0:
+            context = {
+                        'title': 'Get Loan error',
+                        'error': '!!!!Amount must be positive!!!!'
+                    }
+            return render(request, 'bank_app/get_loan.html', context)
+
         ban = request.POST['ban']
         print("get_loan: ", amount, ban)
         customer = Customer.objects.get(user=request.user)
@@ -153,9 +160,12 @@ def pay_loan(request):
         if form.is_valid():
             customer = Customer.objects.get(user=request.user)
             amount = form.cleaned_data['amount']
-            customer_account = Account.objects.get(pk=form.cleaned_data['customer_account'].pk)
+            see_loan_account = form.cleaned_data['loan_account']
+            print("see_loan_account: ", see_loan_account)
+            customer_account = form.cleaned_data['customer_account']
             customer_text = form.cleaned_data['customer_text']
-            loan_account = Account.objects.get(pk=form.cleaned_data['loan_account'].pk)
+            print("loan_account type: ", type(form.cleaned_data['loan_account'].pk))
+            loan_account = form.cleaned_data['loan_account']
             loan_text = form.cleaned_data['loan_text']
             print(f"amount: {amount}, customer_account: {customer_account}, customer_text: {customer_text}, loan_account: {loan_account}, loan_text:{loan_text}")
             try:
