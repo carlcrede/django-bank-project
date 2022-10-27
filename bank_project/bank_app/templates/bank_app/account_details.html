@@ -5,7 +5,13 @@
 {% block title %}Account details - {{ account.name }}{% endblock %}
 
 {% block content %}
-{% include 'bank_app/customer_dashboard_nav.html' %}
+{% if user.is_authenticated %}
+    {% if is_employee %}
+        {% include 'bank_app/employee_dashboard_nav.html' %}
+    {% else %}
+        {% include 'bank_app/customer_dashboard_nav.html' %}
+    {% endif %}
+{% endif %}
     <article>
         <h2>Account Details</h2>
         
