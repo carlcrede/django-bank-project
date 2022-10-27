@@ -33,17 +33,17 @@ class Command(BaseCommand):
             credit_account=ops_account,
             credit_text='Operational Credit',
             is_loan=True,
-            direct_transaction_with_bank=True
         )
 
         # Create Employee User
 
         dummy_employee = Employee.create_employee(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='dummyemp', passwd='mirror12')
-
+        print("Dummy Employee is created")
         # Create Customer User with 2 Accounts
         dummy_customer = Employee.create_customer(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='johndoe', phone=fake.phone_number(), passwd='mirror12', rank='SILVER')
         dummy_customer_account1 = Employee.create_account(customer_username='johndoe', acc_name="Checking Account")
         dummy_customer_account2 = Employee.create_account(customer_username='johndoe', acc_name= "Savings account")
+        print("Fist Dummy Customer with 2 account is created")
 
         # Transfer funds to customers account
         Ledger.transfer(
@@ -58,6 +58,7 @@ class Command(BaseCommand):
         dummy_customer2 = Employee.create_customer(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='cena', phone=fake.phone_number(), passwd='mirror12')
         dummy_customer2_account1 = Employee.create_account(customer_username='cena', acc_name= "GAINS")
         dummy_customer2_account2 = Employee.create_account(customer_username='cena', acc_name= "Millionaire Account")
+        print("Second Dummy Customer with 2 account is created")
 
         # Transfer funds to customers account
         Ledger.transfer(
