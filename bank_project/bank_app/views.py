@@ -108,7 +108,7 @@ def make_transfer(request):
 def get_loan(request):
     context = {}
     assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
-    assert ( request.user.customer.rank == 'BASIC'), 'Customer with BASIC rank cannnot make a loan'
+    assert ( request.user.customer.rank != 'BASIC'), 'Customer with BASIC rank cannnot make/pay a loan'
     if request.method == 'POST':
         print("request.POST: ", request.POST)
         print("request.user: ", request.user.customer)
@@ -145,32 +145,34 @@ def get_loan(request):
 @login_required
 def pay_loan(request):
     assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
-
+    assert ( request.user.customer.rank != 'BASIC'), 'Customer with BASIC rank cannnot make/pay a loan'
     if request.method == 'POST':
         form = PayLoanForm(request.POST)
-        form.fields['debit_account'].queryset = request.user.customer.accounts
-        form.fields['credit_account'].queryset = request.user.customer.loans
+        form.fields['customer_account'].queryset = request.user.customer.accounts
+        form.fields['loan_account'].queryset = request.user.customer.loans
         if form.is_valid():
+            customer = Customer.objects.get(user=request.user)
             amount = form.cleaned_data['amount']
-            debit_account = Account.objects.get(pk=form.cleaned_data['debit_account'].pk)
-            debit_text = form.cleaned_data['debit_text']
-            credit_account = Account.objects.get(pk=form.cleaned_data['credit_account'].pk)
-            credit_text = form.cleaned_data['credit_text']
+            customer_account = Account.objects.get(pk=form.cleaned_data['customer_account'].pk)
+            customer_text = form.cleaned_data['customer_text']
+            loan_account = Account.objects.get(pk=form.cleaned_data['loan_account'].pk)
+            loan_text = form.cleaned_data['loan_text']
+            print(f"amount: {amount}, customer_account: {customer_account}, customer_text: {customer_text}, loan_account: {loan_account}, loan_text:{loan_text}")
             try:
-                transfer = Ledger.transfer(amount, debit_account, debit_text, credit_account, credit_text)
-                return account_details(request, ban=debit_account.pk)
+                customer_account = customer.pay_loan(amount, customer_account, customer_text, loan_account, loan_text)
+                return account_details(request, ban=customer_account.pk)
             except InsufficientFunds:
                 context = {
-                    'title': 'Transfer error',
-                    'error': 'Insufficient funds for transfer'
+                    'title': 'Pay Loan error',
+                    'error': 'Insufficient funds to pay the loan'
                 }
                 return render(request, 'bank_app/error.html', context)
 
     else:
         form = PayLoanForm()
     
-    form.fields['debit_account'].queryset = request.user.customer.accounts
-    form.fields['credit_account'].queryset = request.user.customer.loans
+    form.fields['customer_account'].queryset = request.user.customer.accounts
+    form.fields['loan_account'].queryset = request.user.customer.loans
     context = {
         'form': form
     }

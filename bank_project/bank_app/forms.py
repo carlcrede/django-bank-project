@@ -19,6 +19,8 @@ class TransferForm(forms.Form):
 
         credit_account = self.cleaned_data.get('credit_account')
         try:
+            print("credit_account:", credit_account)
+            print(type(credit_account))
             Account.objects.get(pk=credit_account)
         except ObjectDoesNotExist:
             self._errors['credit_account'] = self.error_class(['Credit account not found.'])
@@ -30,14 +32,15 @@ class TransferForm(forms.Form):
 
 class PayLoanForm(forms.Form):
     amount = forms.DecimalField(label='Amount', max_digits=10)
-    debit_account = forms.ModelChoiceField(label='Debit Account', queryset=Customer.objects.none())
-    debit_text = forms.CharField(label='Debit Text', max_length=200)
-    credit_account = forms.ModelChoiceField(label='Loan Account', queryset=Customer.objects.none())
-    credit_text = forms.CharField(label='Credit Text', max_length=200)
+    customer_account = forms.ModelChoiceField(label='Debit Account', queryset=Customer.objects.none())
+    customer_text = forms.CharField(label='Debit Text', max_length=200)
+    loan_account = forms.ModelChoiceField(label='Loan Account', queryset=Customer.objects.none())
+    loan_text = forms.CharField(label='Loan Text', max_length=200)
 
     def clean(self):
         super().clean()
         if self.cleaned_data.get('amount') < 0:
             self._errors['amount'] = self.error_class(['Amount must be positive.'])
+        
 
         return self.cleaned_data

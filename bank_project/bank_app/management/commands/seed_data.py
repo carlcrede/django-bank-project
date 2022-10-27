@@ -32,7 +32,8 @@ class Command(BaseCommand):
             debit_text='Operational Credit',
             credit_account=ops_account,
             credit_text='Operational Credit',
-            is_loan=True
+            is_loan=True,
+            direct_transaction_with_bank=True
         )
 
         # Create Employee User
@@ -40,7 +41,7 @@ class Command(BaseCommand):
         dummy_employee = Employee.create_employee(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='dummyemp', passwd='mirror12')
 
         # Create Customer User with 2 Accounts
-        dummy_customer = Employee.create_customer(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='johndoe', phone=fake.phone_number(), passwd='mirror12')
+        dummy_customer = Employee.create_customer(fname=fake.first_name(), lname=fake.last_name(), email=fake.email(), uname='johndoe', phone=fake.phone_number(), passwd='mirror12', rank='SILVER')
         dummy_customer_account1 = Employee.create_account(customer_username='johndoe', acc_name="Checking Account")
         dummy_customer_account2 = Employee.create_account(customer_username='johndoe', acc_name= "Savings account")
 
