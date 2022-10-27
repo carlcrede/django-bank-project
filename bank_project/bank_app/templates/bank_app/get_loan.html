@@ -4,6 +4,10 @@
 {% include 'bank_app/customer_dashboard_nav.html' %}
 <h1>Get Loan</h1>
    <hr />
+   {% if error %}
+      {{ error }}
+      <hr />
+   {% endif %}
    <form action="{% url 'bank_app:get_loan' %}" method="POST">
       {% csrf_token %}
       <label for="account_options" id="loan_ammount">Choose the account which should receive the loan money: </label>
