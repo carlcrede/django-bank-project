@@ -9,7 +9,7 @@ class Ledger(models.Model):
     text = models.CharField(max_length=200, null=True)
     account = models.ForeignKey('Account', on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
-    direct_transaction_with_bank = models.BooleanField(default=False)
+    direct_transaction_with_bank = models.BooleanField(default=False) # indicates a transfer/transaction between the self.account to bank account
 
     @classmethod
     def transfer(cls, amount, debit_account, debit_text, credit_account, credit_text, is_loan=False, direct_transaction_with_bank=False):
