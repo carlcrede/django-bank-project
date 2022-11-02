@@ -1,11 +1,10 @@
-import secrets
-import os
+import secrets, os, random
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from bank_app.models import Employee, Account, Ledger, Customer
 from faker import Faker
 fake = Faker(['da_DK'])
-Faker.seed(0)
+Faker.seed(random.randint(0, 1_000_000))
 
 
 class Command(BaseCommand):
