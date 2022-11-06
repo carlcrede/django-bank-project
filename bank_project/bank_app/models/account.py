@@ -22,7 +22,17 @@ class Account(models.Model):
 
     @property
     def movements(self) -> QuerySet:
-        return Ledger.objects.filter(account=self).order_by('-created_at')
+        movements = Ledger.objects.filter(account=self, direct_transaction_with_bank=False).order_by('-created_at')
+        # if self.is_loan:
+        #     # since the transfer from bank account to loan account was done first and is last in 
+        #     #   array(because we order by date in movements function and the oldest transactions are at the end),
+        #     #   we can use all the ledgers except the last one
+        #     movements_without_bank_to_loan = movements.filter(direct_transaction_with_bank=False)
+        #     # size = movements_without_direct_transaction_with_bank.count()
+        #     # index_for_bank_to_loan_movement = size - 1
+        #     # movements_without_bank_to_loan = movements_without_direct_transaction_with_bank[index_for_bank_to_loan_movement]
+        #     return movements_without_bank_to_loan
+        return movements
 
     def __str__(self) -> str:
         return f'({self.pk}) {self.name}'
