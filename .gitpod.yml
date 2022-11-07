@@ -3,12 +3,10 @@ tasks:
   - name: Create and activate venv
     init: | 
       pyenv install 3.9.13
-      python -m venv /workspace/venv/django-env --upgrade-deps
+      pyenv virtualenv django-env
     command: |
-      source /workspace/venv/django-env/bin/activate
-      pip install --upgrade pip
-      pip install -r requirements.txt
       cd bank_project/
+      pyenv activate 
 
 ports:
   - port: 8000
