@@ -3,7 +3,7 @@ tasks:
   - name: Create and activate venv
     init: | 
       pyenv install 3.9.13
-      pyenv virtualenv django-env
+      pyenv virtualenv 3.9.13 django-env
     command: |
       pyenv activate django-env
       /home/gitpod/.pyenv/versions/3.9.13/envs/django-env/bin/python -m pip install --upgrade pip
