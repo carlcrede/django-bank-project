@@ -2,7 +2,6 @@
 tasks:
   - name: Create and activate venv
     init: | 
-      git checkout env-fix
       pyenv install 3.9.13
       pyenv virtualenv django-env
     command: |
