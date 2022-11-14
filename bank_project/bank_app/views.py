@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 
 from .errors import InsufficientFunds
 
-from .forms import TransferForm, PayLoanForm
+from .forms import ExternalTransferForm, TransferForm, PayLoanForm
 from .models import Employee, Account, Ledger, Customer
 
 @login_required
@@ -88,6 +88,39 @@ def make_transfer(request):
                 transfer = Ledger.transfer(amount, debit_account, debit_text, credit_account, credit_text)
                 # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
                 return account_details(request, ban=debit_account.pk)
+            except InsufficientFunds:
+                context = {
+                    'title': 'Transfer error',
+                    'error': 'Insufficient funds for transfer'
+                }
+                return render(request, 'bank_app/error.html', context)
+
+    else:
+        form = TransferForm()
+    
+    form.fields['debit_account'].queryset = request.user.customer.accounts
+    context = {
+        'form': form
+    }
+    return render(request, 'bank_app/make_transfer.html', context)
+
+@login_required
+def make_external_transfer(request):
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+
+    if request.method == 'POST':
+        form = ExternalTransferForm(request.POST)
+        form.fields['debit_account'].queryset = request.user.customer.accounts
+        if form.is_valid():
+            amount = form.cleaned_data['amount']
+            debit_account = Account.objects.get(pk=form.cleaned_data['debit_account'].pk)
+            debit_text = form.cleaned_data['debit_text']
+            credit_account = form.cleaned_data['credit_account']
+            credit_text = form.cleaned_data['credit_text']
+            try:
+                # Beginning of external transfer protocol
+                print(credit_account)
+                ...
             except InsufficientFunds:
                 context = {
                     'title': 'Transfer error',
