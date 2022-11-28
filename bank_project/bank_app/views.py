@@ -1,6 +1,10 @@
 from django.shortcuts import HttpResponse, get_object_or_404, render, reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+import pyotp
+import os
+import base64
+from PIL import Image
 
 from .errors import InsufficientFunds
 
@@ -270,3 +274,58 @@ def customer_details(request, customer_username):
         'accounts': accounts,
     }
     return render(request, 'bank_app/customer_details.html', context)
+
+@login_required
+def enable_2fa(request):
+    print("In the enable_2fa view")
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    customer = Customer.objects.get(user=request.user)
+    customer_has_enabled_2fa = (customer.secret_for_2fa is not None)
+    context = {'customer': customer, 'enabled_2fa': customer_has_enabled_2fa}
+    return render(request, 'bank_app/enable_2fa.html', context)
+
+@login_required
+def generate_2fa(request):
+    print("In the enable_2fa view")
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    customer = Customer.objects.get(user=request.user)
+    context = {'customer': customer}
+    
+    print("In the enable_2fa view > POST")
+    secret_for_2fa = pyotp.random_base32()
+    customer.secret_for_2fa = secret_for_2fa
+    string_for_2fa = f"otpauth://totp/Bank%20Project:{customer.user.first_name}%20{customer.user.last_name}?secret={secret_for_2fa}&issuer=Bank%20Project"
+    qr_file_path=f"./bank_app/qrcodes/{customer.user.first_name}-{customer.user.last_name}.png"
+    generate_qrcode = f"qrencode -o {qr_file_path} {string_for_2fa}"
+    print(generate_qrcode)
+
+#         <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4
+#   //8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" alt="Red dot" />
+    print("generate_qrcode here")
+    gen = os.system(generate_qrcode)
+    print("gen, ", gen)
+    print("generate_qrcode there")
+    while not os.path.exists(qr_file_path):
+        print("in while loop")
+        print(os.path.exists(qr_file_path))
+    print(os.path.exists(qr_file_path))
+    # file = Image.open(b(qr_file_path), "rb")
+    f = open(qr_file_path, "rb")
+    file = f.readline()
+    encoded_qrcode = base64.b64encode(file).decode("utf-8")
+    print(f"in the with: {encoded_qrcode}")
+        # # With the secret, generate QR-code and send it to uesr 
+        # totp = pyotp.TOTP('base32secret3232')
+        # totp.now() # => '492039'
+        # # OTP verified for current time
+        # totp.verify('492039') # => True
+        # totp.verify('492039') # => False
+
+    response = f"<img src='data:image/png;base64,{encoded_qrcode}' alt='QR Code' />"
+    print("rm here")
+    print(os.path.exists(qr_file_path))
+    # os.system(f"rm {qr_file_path}")
+    # print(os.path.exists(qr_file_path))
+    print("rm there")
+    return HttpResponse(response, content_type="text/plain")
+
