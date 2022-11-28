@@ -305,27 +305,36 @@ def generate_2fa(request):
     gen = os.system(generate_qrcode)
     print("gen, ", gen)
     print("generate_qrcode there")
-    while not os.path.exists(qr_file_path):
-        print("in while loop")
-        print(os.path.exists(qr_file_path))
-    print(os.path.exists(qr_file_path))
-    # file = Image.open(b(qr_file_path), "rb")
-    f = open(qr_file_path, "rb")
-    file = f.readline()
-    encoded_qrcode = base64.b64encode(file).decode("utf-8")
-    print(f"in the with: {encoded_qrcode}")
-        # # With the secret, generate QR-code and send it to uesr 
-        # totp = pyotp.TOTP('base32secret3232')
-        # totp.now() # => '492039'
-        # # OTP verified for current time
-        # totp.verify('492039') # => True
-        # totp.verify('492039') # => False
-
-    response = f"<img src='data:image/png;base64,{encoded_qrcode}' alt='QR Code' />"
-    print("rm here")
-    print(os.path.exists(qr_file_path))
-    # os.system(f"rm {qr_file_path}")
+    # while not os.path.exists(qr_file_path):
+    #     print("in while loop")
+    #     print(os.path.exists(qr_file_path))
+    if (gen == 0):    
+        with open(qr_file_path, "rb") as f:
+            file = f.readline()
+            encoded_qrcode = base64.b64encode(file).decode("utf-8")
+            encoded_qrcode = base64.b64encode(file).decode("utf-8")
+            print(f"in the with: {encoded_qrcode}")
+            response = f"<img src='data:image/png;base64,{encoded_qrcode}' alt='QR Code' />"
+    else:
+        response = "<div>Try again</div>"
     # print(os.path.exists(qr_file_path))
-    print("rm there")
+    # # file = Image.open(b(qr_file_path), "rb")
+    # f = open(qr_file_path, "rb")
+    # file = f.readline()
+    # encoded_qrcode = base64.b64encode(file).decode("utf-8")
+    # print(f"in the with: {encoded_qrcode}")
+    #     # # With the secret, generate QR-code and send it to uesr 
+    #     # totp = pyotp.TOTP('base32secret3232')
+    #     # totp.now() # => '492039'
+    #     # # OTP verified for current time
+    #     # totp.verify('492039') # => True
+    #     # totp.verify('492039') # => False
+
+    
+    # print("rm here")
+    # print(os.path.exists(qr_file_path))
+    # # os.system(f"rm {qr_file_path}")
+    # # print(os.path.exists(qr_file_path))
+    # print("rm there")
     return HttpResponse(response, content_type="text/plain")
 
