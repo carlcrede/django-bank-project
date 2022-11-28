@@ -5,6 +5,11 @@ import pyotp
 import os
 import base64
 from PIL import Image
+import subprocess
+
+# This is our shell command, executed by Popen.
+
+
 
 from .errors import InsufficientFunds
 
@@ -295,26 +300,31 @@ def generate_2fa(request):
     secret_for_2fa = pyotp.random_base32()
     customer.secret_for_2fa = secret_for_2fa
     string_for_2fa = f"otpauth://totp/Bank%20Project:{customer.user.first_name}%20{customer.user.last_name}?secret={secret_for_2fa}&issuer=Bank%20Project"
-    qr_file_path=f"./bank_app/qrcodes/{customer.user.first_name}-{customer.user.last_name}.png"
+    qr_file_path=f"./bank_app/qrcodes/{customer.user.first_name}-{customer.user.last_name}.txt"
+    type = "UTF8"
     generate_qrcode = f"qrencode -o {qr_file_path} {string_for_2fa}"
     print(generate_qrcode)
 
 #         <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4
 #   //8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" alt="Red dot" />
     print("generate_qrcode here")
-    gen = os.system(generate_qrcode)
-    print("gen, ", gen)
+    p = subprocess.Popen(generate_qrcode, stdout=subprocess.PIPE, shell=True)
+
+    # print(p.stdout.read())
+    print(p.communicate())
+    # print("gen, ", gen)
     print("generate_qrcode there")
     # while not os.path.exists(qr_file_path):
     #     print("in while loop")
     #     print(os.path.exists(qr_file_path))
-    if (gen == 0):    
-        with open(qr_file_path, "rb") as f:
-            file = f.readline()
-            encoded_qrcode = base64.b64encode(file).decode("utf-8")
+    if (os.path.exists(qr_file_path)): 
+        # os.system("ls  -R")   
+        with open(qr_file_path, "r+b") as f:
+            file = f.read()
             encoded_qrcode = base64.b64encode(file).decode("utf-8")
             print(f"in the with: {encoded_qrcode}")
             response = f"<img src='data:image/png;base64,{encoded_qrcode}' alt='QR Code' />"
+            os.remove(qr_file_path)
     else:
         response = "<div>Try again</div>"
     # print(os.path.exists(qr_file_path))
