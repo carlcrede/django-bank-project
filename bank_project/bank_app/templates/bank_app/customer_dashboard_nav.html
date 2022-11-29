@@ -1,5 +1,5 @@
 <nav>
-    <a href="{% url 'bank_app:enable_2fa' %}">Enable 2-Factor Authentication</a>&nbsp;&nbsp;|&nbsp;
+    <a href="{% url 'bank_app:enable_2fa' %}">2-Factor Authentication</a>&nbsp;&nbsp;|&nbsp;
     <a href="{% url 'bank_app:customer_dashboard' %}">Accounts</a>&nbsp;&nbsp;|&nbsp;
     <a href="{% url 'bank_app:make_transfer' %}">Make transfer</a>&nbsp;&nbsp;|&nbsp;
     {% if user.customer.rank != "BASIC"%}

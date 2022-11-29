@@ -285,7 +285,8 @@ def enable_2fa(request):
     print("In the enable_2fa view")
     assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
     customer = Customer.objects.get(user=request.user)
-    customer_has_enabled_2fa = (customer.secret_for_2fa is not None)
+    customer_has_enabled_2fa = (len(str(customer.secret_for_2fa)) != 0)
+    print(customer_has_enabled_2fa)
     context = {'customer': customer, 'enabled_2fa': customer_has_enabled_2fa}
     return render(request, 'bank_app/enable_2fa.html', context)
 
@@ -298,8 +299,7 @@ def generate_2fa(request):
     
     print("In the enable_2fa view > POST")
     secret_for_2fa = pyotp.random_base32()
-    customer.secret_for_2fa = secret_for_2fa
-    string_for_2fa = f"otpauth://totp/Bank%20Project:{customer.user.first_name}%20{customer.user.last_name}?secret={secret_for_2fa}&issuer=Bank%20Project"
+    string_for_2fa = f"otpauth://totp/Bank%20Project:%20{customer.user.first_name}%20{customer.user.last_name}?secret={secret_for_2fa}&issuer=Bank%20Project"
     qr_file_path=f"./bank_app/qrcodes/{customer.user.first_name}-{customer.user.last_name}.txt"
     type = "UTF8"
     generate_qrcode = f"qrencode -o {qr_file_path} {string_for_2fa}"
@@ -323,10 +323,14 @@ def generate_2fa(request):
             file = f.read()
             encoded_qrcode = base64.b64encode(file).decode("utf-8")
             print(f"in the with: {encoded_qrcode}")
-            response = f"<img src='data:image/png;base64,{encoded_qrcode}' alt='QR Code' />"
+            response = f"<div>Scan the QR-code with Google Autnentificator App</div><img src='data:image/png;base64,{encoded_qrcode}' alt='QR Code' />"
+            customer.secret_for_2fa = secret_for_2fa
+            customer.save()
             os.remove(qr_file_path)
     else:
         response = "<div>Try again</div>"
+    
+    # return render(request, 'bank_app/customer_details.html', context)
     # print(os.path.exists(qr_file_path))
     # # file = Image.open(b(qr_file_path), "rb")
     # f = open(qr_file_path, "rb")
@@ -348,3 +352,43 @@ def generate_2fa(request):
     # print("rm there")
     return HttpResponse(response, content_type="text/plain")
 
+
+@login_required
+def check_2fa(request):
+    customer = Customer.objects.get(user=request.user)
+    customer_has_enabled_2fa = (len(str(customer.secret_for_2fa)) != 0)
+    if (not customer_has_enabled_2fa):
+         return HttpResponseRedirect(reverse('bank_app:index'))
+
+    context = {}
+    if request.method == "POST":
+        code = request.POST['code']
+        print("code", code)
+        totp = pyotp.TOTP(customer.secret_for_2fa)
+        is_code_correct = totp.verify(f'{code}') # => True
+        print("is_code_correct", is_code_correct)
+        if is_code_correct:
+            return HttpResponseRedirect(reverse('bank_app:index'))
+            # return HttpResponseRedirect(reverse('bank_app:check_2fa'))
+        else:
+            context = {
+                'error': 'Incorrect code. Please try again'
+            }
+    return render(request, 'bank_app/check_2fa.html', context)
+    
+# @login_required
+# def check_2fa(request):
+
+#     context = {}
+
+#     if request.method == "POST":
+#         user = authenticate(
+#             request, username=request.POST['user'], password=request.POST['password'])
+#         if user:
+#             dj_login(request, user)
+#             return HttpResponseRedirect(reverse('bank_app:check_2fa'))
+#         else:
+#             context = {
+#                 'error': 'Bad username or password.'
+#             }
+#     return render(request, 'login_app/login.html', context)

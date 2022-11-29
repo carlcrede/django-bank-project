@@ -21,4 +21,5 @@ urlpatterns = [
    path('customer_details/<str:customer_username>/', views.customer_details, name='customer_details'), # to access it: localhost:8000/bank/customer_details
    path('enable_2fa/', views.enable_2fa, name='enable_2fa'), # to access it: localhost:8000/bank/enable_2fa
    path('generate_2fa/', views.generate_2fa, name='generate_2fa'), # to access it: localhost:8000/bank/generate_2fa
+   path('check_2fa/', views.check_2fa, name='check_2fa'), # to access it: localhost:8000/bank/generate_2fa
 ]

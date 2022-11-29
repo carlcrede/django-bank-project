@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 
 def login(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('bank_app:index'))
+        return HttpResponseRedirect(reverse('bank_app:check_2fa'))
     
     context = {}
 
@@ -14,7 +14,7 @@ def login(request):
             request, username=request.POST['user'], password=request.POST['password'])
         if user:
             dj_login(request, user)
-            return HttpResponseRedirect(reverse('bank_app:index'))
+            return HttpResponseRedirect(reverse('bank_app:check_2fa'))
         else:
             context = {
                 'error': 'Bad username or password.'
