@@ -9,12 +9,12 @@
 <hr />
 {% endif %}
 {% if enabled_2fa %}
-<div>2-Factor Authentification is enabled</div>
+<div>Phone 2-Factor Authentification is enabled</div>
 <a hx-trigger="click" hx-get="{% url 'bank_app:generate_2fa' %}"
   hx-target="#generate_2fa" style="display: block;" ><button>Update 2-Factor Authentification</button>
 </a>
 {% else %}
-<div>2-Factor Authentification is not yet enabled</div>
+<div>Phone 2-Factor Authentification is not yet enabled</div>
 <a hx-trigger="click" hx-get="{% url 'bank_app:generate_2fa' %}"
   hx-target="#generate_2fa" style="display: block;" ><button>Enable 2-Factor Authentification</button>
 </a>

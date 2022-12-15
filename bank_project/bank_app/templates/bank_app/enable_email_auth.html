@@ -1,0 +1,26 @@
+{% extends 'bank_app/base.html' %}
+
+{% block content %}
+{% include 'bank_app/employee_dashboard_nav.html' %}
+<h1>2-Factor Authentication</h1>
+<hr />
+{% if error %}
+{{ error }}
+<hr />
+{% endif %}
+{% if enabled_email_auth %}
+<div>Email 2-Factor Authentification is enabled</div>
+<div>Emails are sent to {{employee_email}}</div>
+{% comment %} <a hx-trigger="click" hx-get="{% url 'bank_app:generate_email_auth' %}"
+  hx-target="#generate_email_auth" style="display: block;" ><button>Update 2-Factor Authentification</button>
+</a> {% endcomment %}
+{% else %}
+<div>Email 2-Factor Authentification is not yet enabled</div>
+<div>Emails will be sent to {{employee_email}}</div>
+<a hx-trigger="click" hx-get="{% url 'bank_app:generate_email_auth' %}"
+  hx-target="#generate_email_auth" style="display: block;" ><button>Enable 2-Factor Authentification</button>
+</a>
+{% endif %}
+<hr>
+<div id="generate_email_auth"></div>
+{% endblock %}
