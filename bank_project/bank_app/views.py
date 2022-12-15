@@ -6,6 +6,8 @@ import os
 import base64
 from PIL import Image
 import subprocess
+from django.core.mail import send_mail
+from django.core import mail
 
 # This is our shell command, executed by Popen.
 
@@ -291,6 +293,17 @@ def enable_2fa(request):
     return render(request, 'bank_app/enable_2fa.html', context)
 
 @login_required
+def enable_email_auth(request):
+    print("In the enable_email_auth view")
+    assert hasattr(request.user, 'employee'), 'Customer user routing customer view.'
+    employee = Employee.objects.get(user=request.user)
+    employee_email = employee.user.email
+    employee_has_enabled_email_auth = (employee.secret_for_email_auth is not None)
+    print(employee_has_enabled_email_auth)
+    context = {'employee_email': employee_email, 'enabled_email_auth': employee_has_enabled_email_auth}
+    return render(request, 'bank_app/enable_email_auth.html', context)
+
+@login_required
 def generate_2fa(request):
     print("In the enable_2fa view")
     assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
@@ -352,6 +365,42 @@ def generate_2fa(request):
     # print("rm there")
     return HttpResponse(response, content_type="text/plain")
 
+@login_required
+def generate_email_auth(request):
+    print("In the generate_email_auth view")
+    # assert hasattr(request.user, 'employee'), 'Customer user routing customer view.'
+    employee = Employee.objects.get(user=request.user)
+    context = {'employee': employee}
+    
+    secret_for_email_auth = pyotp.random_base32()
+    # send_mail returns the number of successfully delivered messages (which can be 0 or 1 since it can only send one message).
+    print("before response")
+    employee_email = employee.user.email
+    email_sent = send_mail(
+                    'Bank Project -- Email 2-Factor Authentification',
+                    'This email is a confirmation that 2-Factor Authentification on the "Bank Project" website was enabled.\n Next time you login, you will receive a code on this mailbox that will help you authentificate on the website',
+                    'a.sandrovschii@gmail.com',
+                    ['a.sandrovschii@gmail.com', employee_email],
+                    fail_silently=False,
+                )
+    print("Email was sent: ", email_sent)
+    # with mail.get_connection(fail_silently=False) as connection:
+    #     mail.EmailMessage(
+    #         'Subject here', 'Here is the message.', 'from@example.com', ['alex155@stud.kea.dk'],
+    #         connection=connection,
+    #     ).send()
+
+    # print("connection", connection)
+    response = ""
+    if email_sent:
+        employee.secret_for_email_auth = secret_for_email_auth
+        employee.n_times_logged_in_with_email_auth = 0
+        employee.save()
+        response = f"<div>A confirmation email was sent to your {employee_email} mailbox.</div>"
+    else:
+        response = "<div>Try again</div>"
+    return HttpResponse(response, content_type="text/plain")
+
 
 @login_required
 def check_2fa(request):
@@ -376,19 +425,81 @@ def check_2fa(request):
             }
     return render(request, 'bank_app/check_2fa.html', context)
     
-# @login_required
-# def check_2fa(request):
+@login_required
+def check_email_auth(request):
+    print("in the check_email_auth")
+    employee = Employee.objects.get(user=request.user)
+    print("employee.secret_for_email_auth: ", employee.secret_for_email_auth)
+    employee_has_enabled_email_auth = (employee.secret_for_email_auth is not None)
+    print("employee_has_enabled_email_auth: ", employee_has_enabled_email_auth)
+    if (not employee_has_enabled_email_auth):
+         return HttpResponseRedirect(reverse('bank_app:index'))
+    employee_email = employee.user.email
+    context = {'employee_email': employee_email}
+    hotp = pyotp.HOTP(employee.secret_for_email_auth)
+    n_times_employee_logged_in_with_email_auth = employee.n_times_logged_in_with_email_auth
+    print("n_times_employee_logged_in_with_email_auth: ", n_times_employee_logged_in_with_email_auth)
+    correct_code = hotp.at(n_times_employee_logged_in_with_email_auth)
+    print("correct_code", correct_code)
+    if request.method == "POST":
+        reveived_code = request.POST['code']
+        print("reveived_code", reveived_code)
+        if correct_code == reveived_code:
+            employee.n_times_logged_in_with_email_auth = 1 + n_times_employee_logged_in_with_email_auth
+            employee.save()
+            return HttpResponseRedirect(reverse('bank_app:index'))
+            # return HttpResponseRedirect(reverse('bank_app:check_2fa'))
+        else:
+            context = {
+                'error': 'Incorrect code. Please try again'
+            }
+    response = send_mail(
+        'Bank Project -- Authentification Code',
+        f"Use the following code to login to the 'Bank Project' website\n {correct_code }",
+        'a.sandrovschii@gmail.com',
+        ['a.sandrovschii@gmail.com', employee_email],
+        fail_silently=False,
+    )
+    print("email was sent: ", response)
+    return render(request, 'bank_app/check_email_auth.html', context)
 
+
+    
+# @login_required
+# def check_email_auth(request):
+#     send_mail(
+#             'Subject here',
+#             'Here is the message.',
+#             'from@example.com',
+#             ['to@example.com'],
+#             fail_silently=False,
+#         )
 #     context = {}
 
-#     if request.method == "POST":
-#         user = authenticate(
-#             request, username=request.POST['user'], password=request.POST['password'])
-#         if user:
-#             dj_login(request, user)
-#             return HttpResponseRedirect(reverse('bank_app:check_2fa'))
-#         else:
-#             context = {
-#                 'error': 'Bad username or password.'
-#             }
+#     # if request.method == "POST":
+#         # user = authenticate(
+#         #     request, username=request.POST['user'], password=request.POST['password'])
+#         # if True:
+#         #     dj_login(request, user)
+#         #     return HttpResponseRedirect(reverse('bank_app:check_2fa'))
+#         # else:
+#         #     context = {
+#         #         'error': 'Bad username or password.'
+#         #     }
 #     return render(request, 'login_app/login.html', context)
+
+
+   # with mail.get_connection(fail_silently=False) as connection:
+    #     mail.EmailMessage(
+    #         'Subject here', 'Here is the message.', 'from@example.com', ['alex155@stud.kea.dk'],
+    #         connection=connection,
+    #     ).send()
+
+    # respones = send_mail(
+    #                 'Subject here',
+    #                 'Here is the message.',
+    #                 'a.sandrovschii@gmail.com',
+    #                 ['alex155r@stud.kea.dk'],
+    #                 fail_silently=False,
+    #             )
+    # print(respones)
