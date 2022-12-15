@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 import pyotp
 import os
 import base64
-from PIL import Image
 import subprocess
 from django.core.mail import send_mail
 from django.core import mail
