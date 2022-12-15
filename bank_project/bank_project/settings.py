@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django_crontab',
     'bank_app',
     'login_app',
 ]
@@ -134,3 +135,7 @@ EMAIL_HOST_USER = "apikey"
 # EMAIL_HOST_PASSWORD = "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"
 EMAIL_HOST_PASSWORD = "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"
 EMAIL_USE_TLS = False
+
+CRONJOBS = [
+    ('*/5 * * * *', 'bank_app.cron.pay_recurring_payments')
+]
