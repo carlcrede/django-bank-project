@@ -6,8 +6,8 @@ from datetime import datetime
 
 class Recurring_Payment(models.Model):
     sender = models.ForeignKey('Customer', on_delete=models.CASCADE)
-    sender_account = models.ForeignKey('Account', on_delete=models.CASCADE)
-    receiver_account = models.ForeignKey('Account', on_delete=models.CASCADE)
+    sender_account = models.ForeignKey('Account', related_name= "sender_account_for_recurring_payment",on_delete=models.CASCADE)
+    receiver_account = models.ForeignKey('Account', related_name= "receiver_account_for_recurring_payment", on_delete=models.CASCADE)
     text = models.CharField(max_length=200, null=True)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     start_date = models.DateTimeField(null=True)
