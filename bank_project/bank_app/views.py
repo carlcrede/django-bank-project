@@ -129,13 +129,13 @@ def make_external_transfer(request):
                 return render(request, 'bank_app/error.html', context)
 
     else:
-        form = TransferForm()
+        form = ExternalTransferForm()
     
     form.fields['debit_account'].queryset = request.user.customer.accounts
     context = {
         'form': form
     }
-    return render(request, 'bank_app/make_transfer.html', context)
+    return render(request, 'bank_app/make_external_transfer.html', context)
 
 @login_required
 def get_loan(request):
