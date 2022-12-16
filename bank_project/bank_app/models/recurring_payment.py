@@ -18,7 +18,7 @@ class Recurring_Payment(models.Model):
     @classmethod
     def get_recurring_payments_for_today(cls):
         recurring_payments_for_today = cls.objects.filter(start_date__date=datetime.date()).filter(time_to_live__isnull=False)
-
+    
         # get payments that are in the range start_date <= today and end_date >= today
         # if start_date > today --> ttl should be NULL (maybe have 0)
         # if end_date < today --> ttl should be NULL
@@ -111,18 +111,22 @@ class Recurring_Payment(models.Model):
 
     @classmethod
     def pay_recurring_payments_for_today(cls):
-        with transaction.atomic():
-            status_checked = cls.check_status_for_recurring_payments()
-            if (status_checked):
-                recurring_payments_for_today = cls.get_recurring_payments_for_today()
-                for payment_for_today in recurring_payments_for_today:
-                    payment_for_today.update_time_to_live
-                
-                # add them to task queue and deledate to MAKE_TRANSFER or BANK_TO_BANK_TRANSFER 
+        try: 
+            with transaction.atomic():
+                status_checked = cls.check_status_for_recurring_payments()
+                if (status_checked):
+                    recurring_payments_for_today = cls.get_recurring_payments_for_today()
+                    for payment_for_today in recurring_payments_for_today:
+                        payment_for_today.update_time_to_live
+                    
+            return True        
+        except:
+            return False
+                    # add them to task queue and deledate to MAKE_TRANSFER or BANK_TO_BANK_TRANSFER 
 
     @classmethod
     def test(cls):
-        print("inside Recurring Payment class")
+        return "inside Recurring Payment class"
 
 # place recurring_payments into queue
 # run check_status_for_recurring_payments
