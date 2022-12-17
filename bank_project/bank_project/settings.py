@@ -142,12 +142,13 @@ RQ_QUEUES = {
         'HOST': 'redis-10265.c250.eu-central-1-1.ec2.cloud.redislabs.com',
         'PORT': '10265',
         'USER': 'default',
-        'PASSWORD': 'n1lzL8tmFigDpW0Hzem8z3ebPnMLRUIw', 
+        'PASSWORD': 'n1lzL8tmFigDpW0Hzem8z3ebPnMLRUIw',
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
     }
 }
 
 CRONJOBS = [
-    ('* * * * *', 'bank_app.cron.pay_recurring_payments', '>> /workspace/django-bank-project/bank_project/scheduled_job.log')
+    ('* * * * *', 'bank_app.cron.pay_recurring_payments',
+     '>> /workspace/django-bank-project/bank_project/scheduled_job.log')
 ]

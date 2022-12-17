@@ -8,8 +8,6 @@ import subprocess
 from django.core.mail import send_mail
 from django.core import mail
 
-# This is our shell command, executed by Popen.
-
 
 
 from .errors import InsufficientFunds
@@ -495,7 +493,7 @@ def add_recurring_payment(request):
             try:
                 Recurring_Payment.add(request.user.customer, sender_account, receiver_account, text, amount, 
                                         start_date, end_date, pay_once_per_n_days)
-                # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
+                # Recurring_Payment.pay_recurring_payments_for_today()
                 return recurring_payments(request)
             except InsufficientFunds:
                 context = {
@@ -523,6 +521,11 @@ def update_recurring_payment(request, pk):
         end_date = request.POST['end_date']
         pay_once_per_n_days = request.POST['pay_once_per_n_days']
         try:
+            print("amount", amount)
+            print("text", text)
+            print("start_date", start_date)
+            print("end_date", end_date)
+            print("pay_once_per_n_days", pay_once_per_n_days)
             recurring_payment = Recurring_Payment.objects.get(pk=pk)
             recurring_payment.update_recurring_payment(text=text, amount=amount, 
                                     start_date=start_date, end_date=end_date, pay_once_per_n_days=pay_once_per_n_days)
@@ -537,7 +540,7 @@ def update_recurring_payment(request, pk):
 
     else:
         recurring_payment = Recurring_Payment.objects.get(pk=pk)
-        
+        print(type(recurring_payment.start_date))
         context = {
             'payment': recurring_payment
         }

@@ -1,5 +1,9 @@
 from .models import Recurring_Payment
+from datetime import datetime
 
-def test_cron_job():
+
+def pay_recurring_payments():
     response = Recurring_Payment.pay_recurring_payments_for_today()
-    print(response)
+
+    print("RAN CRON")
+    print("now", datetime.now())
