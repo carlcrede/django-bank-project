@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'bank_app',
     'login_app',
+    'django_rq',
 ]
 
 MIDDLEWARE = [
@@ -135,6 +136,17 @@ EMAIL_HOST_USER = "apikey"
 # EMAIL_HOST_PASSWORD = "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"
 EMAIL_HOST_PASSWORD = "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"
 EMAIL_USE_TLS = False
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'redis-10265.c250.eu-central-1-1.ec2.cloud.redislabs.com',
+        'PORT': '10265',
+        'USER': 'default',
+        'PASSWORD': 'n1lzL8tmFigDpW0Hzem8z3ebPnMLRUIw', 
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    }
+}
 
 CRONJOBS = [
     ('*/5 * * * *', 'bank_app.cron.pay_recurring_payments')

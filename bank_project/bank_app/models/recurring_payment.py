@@ -2,7 +2,8 @@ from uuid import uuid4
 from django.db import models, transaction
 from  django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime
-
+import django_rq
+from . import Ledger
 
 class Recurring_Payment(models.Model):
     sender = models.ForeignKey('Customer', on_delete=models.CASCADE)
@@ -16,8 +17,17 @@ class Recurring_Payment(models.Model):
     time_to_live = models.IntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(356)])
 
     @classmethod
+    def add(cls, sender, sender_account, receiver_account, text, amount, start_date, end_date, pay_once_per_n_days):
+        try:
+            cls(sender=sender, sender_account=sender_account, receiver_account=receiver_account, text=text,
+                amount=amount, start_date=start_date, end_date=end_date, pay_once_per_n_days=pay_once_per_n_days, time_to_live=None).save()
+            return True
+        except:
+            return False
+    
+    @classmethod
     def get_recurring_payments_for_today(cls):
-        recurring_payments_for_today = cls.objects.filter(start_date__date=datetime.date()).filter(time_to_live__isnull=False)
+        recurring_payments_for_today = cls.objects.filter(start_date__lte=datetime.date()).filter(end_date__gte=datetime.date()).filter(time_to_live__isnull=False)
 
         # get payments that are in the range start_date <= today and end_date >= today
         # if start_date > today --> ttl should be NULL (maybe have 0)
@@ -54,6 +64,7 @@ class Recurring_Payment(models.Model):
         except:
             return False
         # iterate through recurring payments where start_date == today and time_to_live is set to Null, and change to value of pay_once_per_n_days
+    
     @classmethod
     def get_recurring_payments_by_customer(cls, customer):
         recurring_payments = cls.objects.filter(sender=customer)
@@ -117,7 +128,10 @@ class Recurring_Payment(models.Model):
                 recurring_payments_for_today = cls.get_recurring_payments_for_today()
                 for payment_for_today in recurring_payments_for_today:
                     payment_for_today.update_time_to_live
-                
+                    django_rq.enqueue(Ledger.transfer, amount=payment_for_today.amount, debit_account=payment_for_today.sender_account, 
+                                debit_text=payment_for_today.text, credit_account=payment_for_today.receiver_account, 
+                                credit_text=payment_for_today.text, is_loan=False, direct_transaction_with_bank=False)
+                return "done"
                 # add them to task queue and deledate to MAKE_TRANSFER or BANK_TO_BANK_TRANSFER 
 
     @classmethod
