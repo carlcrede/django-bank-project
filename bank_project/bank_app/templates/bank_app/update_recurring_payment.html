@@ -1,0 +1,18 @@
+{% extends 'bank_app/base.html' %}
+
+{% block content %}
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<h1>Update Recurring Payments</h1>
+<form action="{% url 'bank_app:update_recurring_payment' payment.pk %}" method="post">
+    {% csrf_token %}
+
+    <input type="text" id="amount" name="amount" value={{payment.amount}} placeholder="Update Amount">
+    <input type="text" id="text" name="text" value={{payment.text}} placeholder="Update Message">
+    <input type="date" id="start_date" min={% now "Y-m-d" %} name="start_date" placeholder="Update Start date">
+    <input type="date" id="end_date" value={{payment.end_date}} min={% now "Y-m-d" %} name="end_date" placeholder="Update End date">
+    <input type="text" id="pay_once_per_n_days" name="pay_once_per_n_days" value={{payment.pay_once_per_n_days}}  placeholder="Frequency of payments. Pay once every ??? days.">
+    {% comment %} <input type="text" name="amount" placeholder="Input Account Number, which should receive"> {% endcomment %}
+    {% comment %} <input type="text" name="customer" placeholder="Customer UserName"> {% endcomment %}
+    <button>Update</button>
+</form>
+{% endblock %}

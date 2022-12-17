@@ -14,8 +14,8 @@ from django.core import mail
 
 from .errors import InsufficientFunds
 
-from .forms import TransferForm, PayLoanForm
-from .models import Employee, Account, Ledger, Customer
+from .forms import TransferForm, PayLoanForm, RecurringPaymentForm
+from .models import Employee, Account, Ledger, Customer, Recurring_Payment
 
 @login_required
 def index(request):
@@ -404,7 +404,9 @@ def generate_email_auth(request):
 @login_required
 def check_2fa(request):
     customer = Customer.objects.get(user=request.user)
-    customer_has_enabled_2fa = (len(str(customer.secret_for_2fa)) != 0)
+    customer_has_enabled_2fa = (customer.secret_for_2fa is not None)
+    print("customer_has_enabled_2fa: ", customer_has_enabled_2fa)
+    print("customer.secret_for_2fa: ", customer.secret_for_2fa)
     if (not customer_has_enabled_2fa):
          return HttpResponseRedirect(reverse('bank_app:index'))
 
@@ -463,42 +465,80 @@ def check_email_auth(request):
     return render(request, 'bank_app/check_email_auth.html', context)
 
 
+@login_required
+def recurring_payments(request):   
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    # maybe better have a function in customer
+    recurring_payments = Recurring_Payment.get_recurring_payments_by_customer(request.user.customer)
+    count_recurring_payments = len(recurring_payments)
+    print("recurring_payments: ", recurring_payments) 
+    print("count_recurring_payments: ", count_recurring_payments) 
+    context = {
+        'recurring_payments': recurring_payments,
+        'count_recurring_payments': count_recurring_payments
+    }
+    return render(request, 'bank_app/recurring_payments.html', context)
     
-# @login_required
-# def check_email_auth(request):
-#     send_mail(
-#             'Subject here',
-#             'Here is the message.',
-#             'from@example.com',
-#             ['to@example.com'],
-#             fail_silently=False,
-#         )
-#     context = {}
+@login_required
+def add_recurring_payment(request):   
+    if request.method == 'POST':
+        form = RecurringPaymentForm(request.POST)
+        form.fields['sender_account'].queryset = request.user.customer.accounts
+        if form.is_valid():
+            sender_account = Account.objects.get(pk=form.cleaned_data['sender_account'].pk)
+            receiver_account = Account.objects.get(pk=form.cleaned_data['receiver_account'])
+            amount = form.cleaned_data['amount']
+            text = form.cleaned_data['text']
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            pay_once_per_n_days = form.cleaned_data['pay_once_per_n_days']
+            try:
+                Recurring_Payment.add(request.user.customer, sender_account, receiver_account, text, amount, 
+                                        start_date, end_date, pay_once_per_n_days)
+                # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
+                return recurring_payments(request)
+            except InsufficientFunds:
+                context = {
+                    'title': 'Payment error',
+                    'error': 'Insufficient funds to set a recurring payment'
+                }
+                return render(request, 'bank_app/error.html', context)
 
-#     # if request.method == "POST":
-#         # user = authenticate(
-#         #     request, username=request.POST['user'], password=request.POST['password'])
-#         # if True:
-#         #     dj_login(request, user)
-#         #     return HttpResponseRedirect(reverse('bank_app:check_2fa'))
-#         # else:
-#         #     context = {
-#         #         'error': 'Bad username or password.'
-#         #     }
-#     return render(request, 'login_app/login.html', context)
+    else:
+        form = RecurringPaymentForm()
+    print("request.user.customer.accounts: ", request.user.customer.accounts)
+    form.fields['sender_account'].queryset = request.user.customer.accounts
+    context = {
+        'form': form,
+    }
+    return render(request, 'bank_app/add_recurring_payment.html', context)
 
+@login_required
+def update_recurring_payment(request, pk):
+    context = {}   
+    if request.method == 'POST':
+        amount = request.POST['amount']
+        text = request.POST['text']
+        start_date = request.POST['start_date']
+        end_date = request.POST['end_date']
+        pay_once_per_n_days = request.POST['pay_once_per_n_days']
+        try:
+            recurring_payment = Recurring_Payment.objects.get(pk=pk)
+            recurring_payment.update_recurring_payment(text=text, amount=amount, 
+                                    start_date=start_date, end_date=end_date, pay_once_per_n_days=pay_once_per_n_days)
+            # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
+            return recurring_payments(request)
+        except InsufficientFunds:
+            context = {
+                'title': 'Payment error',
+                'error': 'Insufficient funds to set a recurring payment'
+            }
+            return render(request, 'bank_app/error.html', context)
 
-   # with mail.get_connection(fail_silently=False) as connection:
-    #     mail.EmailMessage(
-    #         'Subject here', 'Here is the message.', 'from@example.com', ['alex155@stud.kea.dk'],
-    #         connection=connection,
-    #     ).send()
-
-    # respones = send_mail(
-    #                 'Subject here',
-    #                 'Here is the message.',
-    #                 'a.sandrovschii@gmail.com',
-    #                 ['alex155r@stud.kea.dk'],
-    #                 fail_silently=False,
-    #             )
-    # print(respones)
+    else:
+        recurring_payment = Recurring_Payment.objects.get(pk=pk)
+        
+        context = {
+            'payment': recurring_payment
+        }
+    return render(request, 'bank_app/update_recurring_payment.html', context)
