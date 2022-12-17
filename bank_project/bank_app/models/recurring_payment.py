@@ -136,7 +136,7 @@ class Recurring_Payment(models.Model):
 
     @classmethod
     def test(cls):
-        print("inside Recurring Payment class")
+        return "inside Recurring Payment class"
 
 # place recurring_payments into queue
 # run check_status_for_recurring_payments

@@ -149,5 +149,5 @@ RQ_QUEUES = {
 }
 
 CRONJOBS = [
-    ('*/5 * * * *', 'bank_app.cron.pay_recurring_payments')
+    ('* * * * *', 'bank_app.cron.pay_recurring_payments', '>> /workspace/django-bank-project/bank_project/scheduled_job.log')
 ]
