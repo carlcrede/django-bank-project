@@ -4,19 +4,17 @@ from django.contrib.auth.decorators import login_required
 import pyotp
 import os
 import base64
-from PIL import Image
 import subprocess
 from django.core.mail import send_mail
 from django.core import mail
-
-# This is our shell command, executed by Popen.
-
+from datetime import datetime
 
 
-from .errors import InsufficientFunds
+from .errors import InsufficientFunds, NotEverythingProvided
 
-from .forms import TransferForm, PayLoanForm
-from .models import Employee, Account, Ledger, Customer
+from .forms import TransferForm, PayLoanForm, RecurringPaymentForm
+from .models import Employee, Account, Ledger, Customer, Recurring_Payment
+
 
 @login_required
 def index(request):
@@ -29,9 +27,11 @@ def index(request):
 
     return render(request, 'bank_app/error.html', {'error': 'Fatal error. Should never happen'})
 
+
 @login_required
 def customer_dashboard(request):
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
 
     accounts = request.user.customer.accounts
     loans = request.user.customer.loans
@@ -40,10 +40,12 @@ def customer_dashboard(request):
         'loans': loans
     }
     return render(request, 'bank_app/customer_dashboard.html', context)
-    
+
+
 @login_required
 def employee_dashboard(request):
-    assert hasattr(request.user, 'employee'), 'Staff user routing customer view.'
+    assert hasattr(
+        request.user, 'employee'), 'Staff user routing customer view.'
 
     customers = Customer.objects.all()
     context = {
@@ -56,7 +58,8 @@ def employee_dashboard(request):
 def account_details(request, ban):
     if hasattr(request.user, 'customer'):
         'Staff user routing customer view.'
-        account = get_object_or_404(Account, customer=request.user.customer, pk=ban)
+        account = get_object_or_404(
+            Account, customer=request.user.customer, pk=ban)
         context = {
             'is_employee': False,
             'account': account
@@ -70,11 +73,12 @@ def account_details(request, ban):
         }
         return render(request, 'bank_app/account_details.html', context)
 
+
 @login_required
 def transaction_details(request, transaction_id):
     t = Ledger.objects.filter(transaction_id=transaction_id)
     credit = t[0] if t[0].amount > 0 else t[1]
-    debit =  t[0] if t[0].amount <= 0 else t[1]
+    debit = t[0] if t[0].amount <= 0 else t[1]
     context = {
         'credit': credit,
         'debit': debit,
@@ -82,21 +86,26 @@ def transaction_details(request, transaction_id):
     }
     return render(request, 'bank_app/transaction_details.html', context)
 
+
 @login_required
 def make_transfer(request):
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
 
     if request.method == 'POST':
         form = TransferForm(request.POST)
         form.fields['debit_account'].queryset = request.user.customer.accounts
         if form.is_valid():
             amount = form.cleaned_data['amount']
-            debit_account = Account.objects.get(pk=form.cleaned_data['debit_account'].pk)
+            debit_account = Account.objects.get(
+                pk=form.cleaned_data['debit_account'].pk)
             debit_text = form.cleaned_data['debit_text']
-            credit_account = Account.objects.get(pk=form.cleaned_data['credit_account'])
+            credit_account = Account.objects.get(
+                pk=form.cleaned_data['credit_account'])
             credit_text = form.cleaned_data['credit_text']
             try:
-                transfer = Ledger.transfer(amount, debit_account, debit_text, credit_account, credit_text)
+                transfer = Ledger.transfer(
+                    amount, debit_account, debit_text, credit_account, credit_text)
                 # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
                 return account_details(request, ban=debit_account.pk)
             except InsufficientFunds:
@@ -108,27 +117,30 @@ def make_transfer(request):
 
     else:
         form = TransferForm()
-    
+
     form.fields['debit_account'].queryset = request.user.customer.accounts
     context = {
         'form': form
     }
     return render(request, 'bank_app/make_transfer.html', context)
 
+
 @login_required
 def get_loan(request):
     context = {}
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
-    assert ( request.user.customer.rank != 'BASIC'), 'Customer with BASIC rank cannnot make/pay a loan'
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
+    assert (request.user.customer.rank !=
+            'BASIC'), 'Customer with BASIC rank cannnot make/pay a loan'
     if request.method == 'POST':
         print("request.POST: ", request.POST)
         print("request.user: ", request.user.customer)
         amount = request.POST['amount']
         if float(amount) < 0:
             context = {
-                        'title': 'Get Loan error',
-                        'error': '!!!!Amount must be positive!!!!'
-                    }
+                'title': 'Get Loan error',
+                'error': '!!!!Amount must be positive!!!!'
+            }
             return render(request, 'bank_app/get_loan.html', context)
 
         ban = request.POST['ban']
@@ -160,10 +172,13 @@ def get_loan(request):
         return account_details(request, ban=loan.pk)
     return render(request, 'bank_app/get_loan.html', context)
 
+
 @login_required
 def pay_loan(request):
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
-    assert ( request.user.customer.rank != 'BASIC'), 'Customer with BASIC rank cannnot make/pay a loan'
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
+    assert (request.user.customer.rank !=
+            'BASIC'), 'Customer with BASIC rank cannnot make/pay a loan'
     if request.method == 'POST':
         form = PayLoanForm(request.POST)
         form.fields['customer_account'].queryset = request.user.customer.accounts
@@ -175,12 +190,14 @@ def pay_loan(request):
             print("see_loan_account: ", see_loan_account)
             customer_account = form.cleaned_data['customer_account']
             customer_text = form.cleaned_data['customer_text']
-            print("loan_account type: ", type(form.cleaned_data['loan_account'].pk))
+            print("loan_account type: ", type(
+                form.cleaned_data['loan_account'].pk))
             loan_account = form.cleaned_data['loan_account']
             loan_text = form.cleaned_data['loan_text']
             print(f"amount: {amount}, customer_account: {customer_account}, customer_text: {customer_text}, loan_account: {loan_account}, loan_text:{loan_text}")
             try:
-                customer_account = customer.pay_loan(amount, customer_account, customer_text, loan_account, loan_text)
+                customer_account = customer.pay_loan(
+                    amount, customer_account, customer_text, loan_account, loan_text)
                 return account_details(request, ban=customer_account.pk)
             except InsufficientFunds:
                 context = {
@@ -191,7 +208,7 @@ def pay_loan(request):
 
     else:
         form = PayLoanForm()
-    
+
     form.fields['customer_account'].queryset = request.user.customer.accounts
     form.fields['loan_account'].queryset = request.user.customer.loans
     context = {
@@ -210,7 +227,8 @@ def create_employee(request):
         last_name = request.POST['last_name']
         email = request.POST['email']
         if password == confirm_password:
-            Employee.create_employee(first_name, last_name, email, user_name, password)
+            Employee.create_employee(
+                first_name, last_name, email, user_name, password)
             # if :
             return HttpResponseRedirect(reverse('bank_app:index'))
             # else:
@@ -222,6 +240,7 @@ def create_employee(request):
                 'error': 'Passwords did not match. Please try again.'
             }
     return render(request, 'bank_app/create_employee.html', context)
+
 
 def create_customer(request):
     context = {}
@@ -235,7 +254,8 @@ def create_customer(request):
         phone = request.POST['phone']
         rank = request.POST['rank']
         if password == confirm_password:
-            Employee.create_customer(first_name, last_name, email, user_name, phone, rank, password)
+            Employee.create_customer(
+                first_name, last_name, email, user_name, phone, rank, password)
             # if :
             return HttpResponseRedirect(reverse('bank_app:index'))
             # else:
@@ -248,6 +268,7 @@ def create_customer(request):
             }
     return render(request, 'bank_app/create_customer.html', context)
 
+
 def create_account(request):
     context = {}
     if request.method == "POST":
@@ -257,6 +278,7 @@ def create_account(request):
         return HttpResponseRedirect(reverse('bank_app:index'))
     return render(request, 'bank_app/create_account.html', context)
 
+
 def create_customer_account(request, customer_username):
     context = {'customer_username': customer_username}
     if request.method == "POST":
@@ -265,6 +287,7 @@ def create_customer_account(request, customer_username):
         return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
     return render(request, 'bank_app/create_customer_account.html', context)
 
+
 def rerank_customer(request, customer_username):
     context = {'customer_username': customer_username}
     if request.method == "POST":
@@ -272,6 +295,7 @@ def rerank_customer(request, customer_username):
         Employee.rerank_customer(customer_username, rank)
         return HttpResponseRedirect(reverse('bank_app:employee_dashboard'))
     return render(request, 'bank_app/rerank_customer.html', context)
+
 
 def customer_details(request, customer_username):
     customer = get_object_or_404(Customer, user__username=customer_username)
@@ -282,38 +306,46 @@ def customer_details(request, customer_username):
     }
     return render(request, 'bank_app/customer_details.html', context)
 
+
 @login_required
 def enable_2fa(request):
     print("In the enable_2fa view")
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
     customer = Customer.objects.get(user=request.user)
     customer_has_enabled_2fa = (len(str(customer.secret_for_2fa)) != 0)
     print(customer_has_enabled_2fa)
     context = {'customer': customer, 'enabled_2fa': customer_has_enabled_2fa}
     return render(request, 'bank_app/enable_2fa.html', context)
 
+
 @login_required
 def enable_email_auth(request):
     print("In the enable_email_auth view")
-    assert hasattr(request.user, 'employee'), 'Customer user routing customer view.'
+    assert hasattr(
+        request.user, 'employee'), 'Customer user routing customer view.'
     employee = Employee.objects.get(user=request.user)
     employee_email = employee.user.email
-    employee_has_enabled_email_auth = (employee.secret_for_email_auth is not None)
+    employee_has_enabled_email_auth = (
+        employee.secret_for_email_auth is not None)
     print(employee_has_enabled_email_auth)
-    context = {'employee_email': employee_email, 'enabled_email_auth': employee_has_enabled_email_auth}
+    context = {'employee_email': employee_email,
+               'enabled_email_auth': employee_has_enabled_email_auth}
     return render(request, 'bank_app/enable_email_auth.html', context)
+
 
 @login_required
 def generate_2fa(request):
     print("In the enable_2fa view")
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
     customer = Customer.objects.get(user=request.user)
     context = {'customer': customer}
-    
+
     print("In the enable_2fa view > POST")
     secret_for_2fa = pyotp.random_base32()
     string_for_2fa = f"otpauth://totp/Bank%20Project:%20{customer.user.first_name}%20{customer.user.last_name}?secret={secret_for_2fa}&issuer=Bank%20Project"
-    qr_file_path=f"./bank_app/qrcodes/{customer.user.first_name}-{customer.user.last_name}.txt"
+    qr_file_path = f"./bank_app/qrcodes/{customer.user.first_name}-{customer.user.last_name}.txt"
     type = "UTF8"
     generate_qrcode = f"qrencode -o {qr_file_path} {string_for_2fa}"
     print(generate_qrcode)
@@ -330,8 +362,8 @@ def generate_2fa(request):
     # while not os.path.exists(qr_file_path):
     #     print("in while loop")
     #     print(os.path.exists(qr_file_path))
-    if (os.path.exists(qr_file_path)): 
-        # os.system("ls  -R")   
+    if (os.path.exists(qr_file_path)):
+        # os.system("ls  -R")
         with open(qr_file_path, "r+b") as f:
             file = f.read()
             encoded_qrcode = base64.b64encode(file).decode("utf-8")
@@ -342,7 +374,7 @@ def generate_2fa(request):
             os.remove(qr_file_path)
     else:
         response = "<div>Try again</div>"
-    
+
     # return render(request, 'bank_app/customer_details.html', context)
     # print(os.path.exists(qr_file_path))
     # # file = Image.open(b(qr_file_path), "rb")
@@ -350,14 +382,13 @@ def generate_2fa(request):
     # file = f.readline()
     # encoded_qrcode = base64.b64encode(file).decode("utf-8")
     # print(f"in the with: {encoded_qrcode}")
-    #     # # With the secret, generate QR-code and send it to uesr 
+    #     # # With the secret, generate QR-code and send it to uesr
     #     # totp = pyotp.TOTP('base32secret3232')
     #     # totp.now() # => '492039'
     #     # # OTP verified for current time
     #     # totp.verify('492039') # => True
     #     # totp.verify('492039') # => False
 
-    
     # print("rm here")
     # print(os.path.exists(qr_file_path))
     # # os.system(f"rm {qr_file_path}")
@@ -365,24 +396,25 @@ def generate_2fa(request):
     # print("rm there")
     return HttpResponse(response, content_type="text/plain")
 
+
 @login_required
 def generate_email_auth(request):
     print("In the generate_email_auth view")
     # assert hasattr(request.user, 'employee'), 'Customer user routing customer view.'
     employee = Employee.objects.get(user=request.user)
     context = {'employee': employee}
-    
+
     secret_for_email_auth = pyotp.random_base32()
     # send_mail returns the number of successfully delivered messages (which can be 0 or 1 since it can only send one message).
     print("before response")
     employee_email = employee.user.email
     email_sent = send_mail(
-                    'Bank Project -- Email 2-Factor Authentification',
-                    'This email is a confirmation that 2-Factor Authentification on the "Bank Project" website was enabled.\n Next time you login, you will receive a code on this mailbox that will help you authentificate on the website',
-                    'a.sandrovschii@gmail.com',
-                    ['a.sandrovschii@gmail.com', employee_email],
-                    fail_silently=False,
-                )
+        'Bank Project -- Email 2-Factor Authentification',
+        'This email is a confirmation that 2-Factor Authentification on the "Bank Project" website was enabled.\n Next time you login, you will receive a code on this mailbox that will help you authentificate on the website',
+        'a.sandrovschii@gmail.com',
+        ['a.sandrovschii@gmail.com', employee_email],
+        fail_silently=False,
+    )
     print("Email was sent: ", email_sent)
     # with mail.get_connection(fail_silently=False) as connection:
     #     mail.EmailMessage(
@@ -405,16 +437,18 @@ def generate_email_auth(request):
 @login_required
 def check_2fa(request):
     customer = Customer.objects.get(user=request.user)
-    customer_has_enabled_2fa = (len(str(customer.secret_for_2fa)) != 0)
+    customer_has_enabled_2fa = (customer.secret_for_2fa is not None)
+    print("customer_has_enabled_2fa: ", customer_has_enabled_2fa)
+    print("customer.secret_for_2fa: ", customer.secret_for_2fa)
     if (not customer_has_enabled_2fa):
-         return HttpResponseRedirect(reverse('bank_app:index'))
+        return HttpResponseRedirect(reverse('bank_app:index'))
 
     context = {}
     if request.method == "POST":
         code = request.POST['code']
         print("code", code)
         totp = pyotp.TOTP(customer.secret_for_2fa)
-        is_code_correct = totp.verify(f'{code}') # => True
+        is_code_correct = totp.verify(f'{code}')  # => True
         print("is_code_correct", is_code_correct)
         if is_code_correct:
             return HttpResponseRedirect(reverse('bank_app:index'))
@@ -424,28 +458,32 @@ def check_2fa(request):
                 'error': 'Incorrect code. Please try again'
             }
     return render(request, 'bank_app/check_2fa.html', context)
-    
+
+
 @login_required
 def check_email_auth(request):
     print("in the check_email_auth")
     employee = Employee.objects.get(user=request.user)
     print("employee.secret_for_email_auth: ", employee.secret_for_email_auth)
-    employee_has_enabled_email_auth = (employee.secret_for_email_auth is not None)
+    employee_has_enabled_email_auth = (
+        employee.secret_for_email_auth is not None)
     print("employee_has_enabled_email_auth: ", employee_has_enabled_email_auth)
     if (not employee_has_enabled_email_auth):
-         return HttpResponseRedirect(reverse('bank_app:index'))
+        return HttpResponseRedirect(reverse('bank_app:index'))
     employee_email = employee.user.email
     context = {'employee_email': employee_email}
     hotp = pyotp.HOTP(employee.secret_for_email_auth)
     n_times_employee_logged_in_with_email_auth = employee.n_times_logged_in_with_email_auth
-    print("n_times_employee_logged_in_with_email_auth: ", n_times_employee_logged_in_with_email_auth)
+    print("n_times_employee_logged_in_with_email_auth: ",
+          n_times_employee_logged_in_with_email_auth)
     correct_code = hotp.at(n_times_employee_logged_in_with_email_auth)
     print("correct_code", correct_code)
     if request.method == "POST":
         reveived_code = request.POST['code']
         print("reveived_code", reveived_code)
         if correct_code == reveived_code:
-            employee.n_times_logged_in_with_email_auth = 1 + n_times_employee_logged_in_with_email_auth
+            employee.n_times_logged_in_with_email_auth = 1 + \
+                n_times_employee_logged_in_with_email_auth
             employee.save()
             return HttpResponseRedirect(reverse('bank_app:index'))
             # return HttpResponseRedirect(reverse('bank_app:check_2fa'))
@@ -464,42 +502,107 @@ def check_email_auth(request):
     return render(request, 'bank_app/check_email_auth.html', context)
 
 
-    
-# @login_required
-# def check_email_auth(request):
-#     send_mail(
-#             'Subject here',
-#             'Here is the message.',
-#             'from@example.com',
-#             ['to@example.com'],
-#             fail_silently=False,
-#         )
-#     context = {}
-
-#     # if request.method == "POST":
-#         # user = authenticate(
-#         #     request, username=request.POST['user'], password=request.POST['password'])
-#         # if True:
-#         #     dj_login(request, user)
-#         #     return HttpResponseRedirect(reverse('bank_app:check_2fa'))
-#         # else:
-#         #     context = {
-#         #         'error': 'Bad username or password.'
-#         #     }
-#     return render(request, 'login_app/login.html', context)
+@login_required
+def recurring_payments(request):
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
+    # maybe better have a function in customer
+    recurring_payments = Recurring_Payment.get_recurring_payments_by_customer(
+        request.user.customer)
+    count_recurring_payments = len(recurring_payments)
+    print("recurring_payments: ", recurring_payments)
+    print("count_recurring_payments: ", count_recurring_payments)
+    context = {
+        'recurring_payments': recurring_payments,
+        'count_recurring_payments': count_recurring_payments
+    }
+    return render(request, 'bank_app/recurring_payments.html', context)
 
 
-   # with mail.get_connection(fail_silently=False) as connection:
-    #     mail.EmailMessage(
-    #         'Subject here', 'Here is the message.', 'from@example.com', ['alex155@stud.kea.dk'],
-    #         connection=connection,
-    #     ).send()
+@login_required
+def add_recurring_payment(request):
+    if request.method == 'POST':
+        form = RecurringPaymentForm(request.POST)
+        form.fields['sender_account'].queryset = request.user.customer.accounts
+        if form.is_valid():
+            sender_account = Account.objects.get(
+                pk=form.cleaned_data['sender_account'].pk)
+            receiver_account = Account.objects.get(
+                pk=form.cleaned_data['receiver_account'])
+            amount = form.cleaned_data['amount']
+            text = form.cleaned_data['text']
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            pay_once_per_n_days = form.cleaned_data['pay_once_per_n_days']
+            try:
+                Recurring_Payment.add(request.user.customer, sender_account, receiver_account, text, amount,
+                                      start_date, end_date, pay_once_per_n_days)
+                # Recurring_Payment.pay_recurring_payments_for_today()
+                return recurring_payments(request)
+            except InsufficientFunds:
+                context = {
+                    'title': 'Payment error',
+                    'error': 'Insufficient funds to set a recurring payment'
+                }
+                return render(request, 'bank_app/error.html', context)
 
-    # respones = send_mail(
-    #                 'Subject here',
-    #                 'Here is the message.',
-    #                 'a.sandrovschii@gmail.com',
-    #                 ['alex155r@stud.kea.dk'],
-    #                 fail_silently=False,
-    #             )
-    # print(respones)
+    else:
+        form = RecurringPaymentForm()
+    print("request.user.customer.accounts: ", request.user.customer.accounts)
+    form.fields['sender_account'].queryset = request.user.customer.accounts
+    context = {
+        'form': form,
+    }
+    return render(request, 'bank_app/add_recurring_payment.html', context)
+
+
+@login_required
+def update_recurring_payment(request, pk):
+    recurring_payment = Recurring_Payment.objects.get(pk=pk)
+    context = {
+        'payment': recurring_payment
+    }
+    if request.method == 'POST':
+        amount = request.POST['amount']
+        text = request.POST['text']
+        start_date = request.POST['start_date']
+        end_date = request.POST['end_date']
+        pay_once_per_n_days = request.POST['pay_once_per_n_days']
+        try:
+            if (not (amount and len(text) and len(str(start_date)) and len(str(end_date)) and pay_once_per_n_days)):
+                print("amount", amount)
+                print("text", text)
+                print("start_date", start_date)
+                print("end_date", end_date)
+                print("pay_once_per_n_days", pay_once_per_n_days)
+                recurring_payment = Recurring_Payment.objects.get(pk=pk)
+                raise NotEverythingProvided('All fields have to be provided')
+            
+            if (datetime.strptime(start_date, '%Y-%m-%d') > datetime.strptime(end_date, '%Y-%m-%d')):
+                raise NotEverythingProvided('Start Date can\'t be after End Date')
+                
+            recurring_payment.update_recurring_payment(
+                text=text, amount=amount, start_date=start_date, end_date=end_date, pay_once_per_n_days=pay_once_per_n_days)
+            # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
+            return recurring_payments(request)
+        except InsufficientFunds:
+            context.update({
+                'title': 'Payment error',
+                'error': 'Insufficient funds to set a recurring payment'
+            })
+
+        except NotEverythingProvided as e:
+            context.update({
+                'title': 'Fields error',
+                'error': f"{e}"
+            })
+            # return render(request, 'bank_app/error.html', context)
+
+    return render(request, 'bank_app/update_recurring_payment.html', context)
+
+
+@login_required
+def delete_recurring_payment(request, pk):
+    recurring_payment = Recurring_Payment.objects.get(pk=pk)
+    recurring_payment.delete()
+    return recurring_payments(request)

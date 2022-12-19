@@ -1,0 +1,32 @@
+{% extends 'bank_app/base.html' %}
+
+{% block content %}
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<h1>Update Recurring Payments</h1>
+{% if error %}
+    {{ error }}
+    <hr />
+{% endif %}
+<form action="{% url 'bank_app:update_recurring_payment' payment.pk %}" method="post">
+    {% csrf_token %}
+    <label for="sender_account">Your Account (can't be changed)</label>
+    <input type="text" id="sender_account" name="sender_account" readonly value={{ payment.sender_account }}>
+    <label for="sender_account">Receiver's Account (can't be changed)</label>
+    <input type="text" id="receiver_account" name="receiver_account" readonly value={{ payment.receiver_account }}>
+    <label for="amount">Amount</label>
+    <input type="text" id="amount" name="amount" value={{ payment.amount }} placeholder="Update Amount">
+    <label for="text">Message</label>
+    <input type="text" id="text" name="text" value={{ payment.text }} placeholder="Update Message">
+    <label for="start_date">Start Date</label>
+    <input type="date" id="start_date" value="{{ payment.start_date|date:'Y-m-d' }}" min={% now "Y-m-d" %} name="start_date" placeholder="Update Start date">
+    <label for="end_date">End Date</label>
+    <input type="date" id="end_date" value="{{ payment.end_date|date:'Y-m-d' }}" min={% now "Y-m-d" %} name="end_date"
+                    placeholder="Update End date">
+    <label for="end_date">Frequency of payments</label>
+    <input type="text" id="pay_once_per_n_days" name="pay_once_per_n_days" value={{ payment.pay_once_per_n_days }}
+        placeholder="Pay once every ??? days.">
+
+    <button>Update</button>
+</form>
+<a href="{% url 'bank_app:recurring_payments' %}"><button>Cancel</button></a>
+{% endblock %}

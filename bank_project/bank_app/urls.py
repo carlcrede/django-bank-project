@@ -24,5 +24,9 @@ urlpatterns = [
    path('check_2fa/', views.check_2fa, name='check_2fa'), # to access it: localhost:8000/bank/generate_2fa
    path('enable_email_auth/', views.enable_email_auth, name='enable_email_auth'), # to access it: localhost:8000/bank/enable_email_auth
    path('generate_email_auth/', views.generate_email_auth, name='generate_email_auth'), # to access it: localhost:8000/bank/generate_email_auth
-   path('check_email_auth/', views.check_email_auth, name='check_email_auth'), # to access it: localhost:8000/bank/generate_email_auth
+   path('check_email_auth/', views.check_email_auth, name='check_email_auth'), # to access it: localhost:8000/bank/check_email_auth
+   path('recurring_payments/', views.recurring_payments, name='recurring_payments'), # to access it: localhost:8000/bank/recurring_payments
+   path('add_recurring_payment/', views.add_recurring_payment, name='add_recurring_payment'), # to access it: localhost:8000/bank/add_recurring_payment
+   path('update_recurring_payment/<int:pk>', views.update_recurring_payment, name='update_recurring_payment'), # to access it: localhost:8000/bank/update_recurring_payment
+   path('delete_recurring_payment/<int:pk>', views.delete_recurring_payment, name='delete_recurring_payment'), # to access it: localhost:8000/bank/delete_recurring_payment
 ]
