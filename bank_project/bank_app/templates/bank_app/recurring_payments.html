@@ -1,0 +1,48 @@
+{% extends "bank_app/base.html" %}
+
+{% block title %}Recyrring Payments{% endblock %}
+
+{% block content %}
+
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<h2>Recyrring Payments</h2>
+{% if count_recurring_payments == 0 %}
+    <div>You don't have any recurring payments yet. You can add them by pressing the button below.</div>
+{% else %}
+    <article>
+        <table>
+            <thead>
+                <tr>
+                    <th>Used Account</th>
+                    <th>Receiver Account</th>
+                    <th>Amount</th>
+                    <th>Message</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Frequency </th>
+                    <th>Actions </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in recurring_payments %}
+                    <tr>
+                        <td>{{ payment.sender_account }}</td>
+                        <td>{{ payment.receiver_account }}</td>
+                        <td>{{ payment.amount }}</td>
+                        <td>{{ payment.text }}</td>
+                        <td>{{ payment.start_date }}</td>
+                        <td>{{ payment.end_date }}</td>
+                        <td>Once every {{ payment.pay_once_per_n_days }} day(s)</td>
+                        <td><a href="{% url 'bank_app:update_recurring_payment' payment.pk %}"><button>Update</button></a>
+                        <a href="{% url 'bank_app:delete_recurring_payment' payment.pk %}"><button>Delete</button></a></td>
+                        {% comment %} <td><a style="display: block;" href="{% url 'bank_app:pause_recurring_payment' loan.pk %}"><button>Stop</button></a></td> {% endcomment %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+{% endif %}
+<a style="display: block;" href="{% url 'bank_app:add_recurring_payment' %}">
+    <button>Add Recurring Payment</button>
+</a>
+{% endblock %}

@@ -38,8 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django_crontab',
     'bank_app',
     'login_app',
+    'django_rq',
 ]
 
 MIDDLEWARE = [
@@ -124,3 +126,29 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email Settings
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_TIMEOUT = 15
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "apikey"
+# EMAIL_HOST_PASSWORD = "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"
+EMAIL_HOST_PASSWORD = "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"
+EMAIL_USE_TLS = False
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'redis-10265.c250.eu-central-1-1.ec2.cloud.redislabs.com',
+        'PORT': '10265',
+        'USER': 'default',
+        'PASSWORD': 'n1lzL8tmFigDpW0Hzem8z3ebPnMLRUIw',
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    }
+}
+
+CRONJOBS = [
+    ('* * * * *', 'bank_app.cron.pay_recurring_payments',
+     '>> /workspace/django-bank-project/bank_project/scheduled_job.log')
+]

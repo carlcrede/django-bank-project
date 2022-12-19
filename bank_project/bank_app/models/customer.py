@@ -16,6 +16,7 @@ class Customer(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.PROTECT)
     phone = models.CharField(max_length=8)
+    secret_for_2fa = models.CharField(max_length=32, null=True, blank=True)
     rank = models.CharField(
         choices=Rank.choices,
         default=Rank.BASIC,

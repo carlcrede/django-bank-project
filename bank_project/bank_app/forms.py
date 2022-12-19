@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Customer, Account
+from datetime import datetime
 
 
 class TransferForm(forms.Form):
@@ -63,5 +64,44 @@ class PayLoanForm(forms.Form):
         
         if self.cleaned_data.get('amount') > customer_account_balance:
             self._errors['amount'] = self.error_class([f'Insufficient funds to pay the loan with specified amount'])
+        
+        return self.cleaned_data
+
+class RecurringPaymentForm(forms.Form):
+    sender_account = forms.ModelChoiceField(label='Your Account', queryset=Customer.objects.none())
+    receiver_account = forms.CharField(label='Reciever\'s Account number')
+    amount = forms.DecimalField(label='Amount', max_digits=10)
+    text = forms.CharField(label='Message', max_length=200)
+    start_date = forms.DateField(widget=forms.DateInput(attrs=dict(type='date', min=datetime.now().date)), label="Start Date")
+    end_date = forms.DateField(widget=forms.DateInput(attrs=dict(type='date', min=datetime.now().date)), label="End Date")
+    pay_once_per_n_days = forms.IntegerField(label="Frequency of payments. Pay once every ??? days.", min_value=1, max_value=365)
+
+    # TODO: probably need another way to identify the credit account, since they atm just use the pk,
+    # and the UUID is kinda too long and complicated to be used by customers easily. Should maybe be a IBAN or
+    # closer to the account ID's we know from our own accounts
+
+    def clean(self):
+        super().clean()
+        customer_account = self.cleaned_data.get('sender_account')
+        print("customer_account: ", customer_account)
+        customer_account_balance = customer_account.balance
+        
+        # credit_account = self.cleaned_data.get('credit_account')
+        # try:
+        #     print("credit_account:", credit_account)
+        #     print(type(credit_account))
+        #     Account.objects.get(pk=credit_account)
+        # except ObjectDoesNotExist:
+        #     self._errors['credit_account'] = self.error_class(['Credit account not found.'])
+
+        if self.cleaned_data.get('amount') < 0:
+            self._errors['amount'] = self.error_class(['Amount must be positive.'])
+
+        if self.cleaned_data.get('amount') > customer_account_balance:
+            self._errors['amount'] = self.error_class(['Insufficient funds to make the recurring payment with specified amount'])
+       
+        if self.cleaned_data.get('start_date') > self.cleaned_data.get('end_date'):
+            self._errors['start_date'] = self.error_class(['Start Date can\'t be after End Date'])
 
         return self.cleaned_data
+        

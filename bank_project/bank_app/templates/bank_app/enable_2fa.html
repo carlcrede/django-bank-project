@@ -1,0 +1,24 @@
+{% extends 'bank_app/base.html' %}
+
+{% block content %}
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<h1>2-Factor Authentication</h1>
+<hr />
+{% if error %}
+{{ error }}
+<hr />
+{% endif %}
+{% if enabled_2fa %}
+<div>Phone 2-Factor Authentification is enabled</div>
+<a hx-trigger="click" hx-get="{% url 'bank_app:generate_2fa' %}"
+  hx-target="#generate_2fa" style="display: block;" ><button>Update 2-Factor Authentification</button>
+</a>
+{% else %}
+<div>Phone 2-Factor Authentification is not yet enabled</div>
+<a hx-trigger="click" hx-get="{% url 'bank_app:generate_2fa' %}"
+  hx-target="#generate_2fa" style="display: block;" ><button>Enable 2-Factor Authentification</button>
+</a>
+{% endif %}
+<hr>
+<div id="generate_2fa"></div>
+{% endblock %}
