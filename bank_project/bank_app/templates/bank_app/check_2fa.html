@@ -1,0 +1,17 @@
+{% extends "bank_app/base.html" %}
+
+{% block title %}Auth{% endblock %}
+{% block content %}
+   <h1>2-Factor Authentification</h1>
+   <hr />
+    <h3>Provide the code generated in Google Authentificator (should consist of 6 digits)</h3>
+      <form action="{% url 'bank_app:check_2fa' %}" method="POST">
+            {% csrf_token %}
+            <input type="number" name="code" placeholder="999999">
+            <button>Check Code</button>
+      </form>
+   <hr />
+   {% if error %}
+      {{ error }}
+   {% endif %}
+{% endblock %}
