@@ -28,4 +28,5 @@ urlpatterns = [
    path('recurring_payments/', views.recurring_payments, name='recurring_payments'), # to access it: localhost:8000/bank/recurring_payments
    path('add_recurring_payment/', views.add_recurring_payment, name='add_recurring_payment'), # to access it: localhost:8000/bank/add_recurring_payment
    path('update_recurring_payment/<int:pk>', views.update_recurring_payment, name='update_recurring_payment'), # to access it: localhost:8000/bank/update_recurring_payment
+   path('delete_recurring_payment/<int:pk>', views.delete_recurring_payment, name='delete_recurring_payment'), # to access it: localhost:8000/bank/delete_recurring_payment
 ]

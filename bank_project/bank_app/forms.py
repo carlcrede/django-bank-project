@@ -98,7 +98,10 @@ class RecurringPaymentForm(forms.Form):
             self._errors['amount'] = self.error_class(['Amount must be positive.'])
 
         if self.cleaned_data.get('amount') > customer_account_balance:
-            self._errors['amount'] = self.error_class([f'Insufficient funds to make the recurring payment with specified amount'])
+            self._errors['amount'] = self.error_class(['Insufficient funds to make the recurring payment with specified amount'])
+       
+        if self.cleaned_data.get('start_date') > self.cleaned_data.get('end_date'):
+            self._errors['start_date'] = self.error_class(['Start Date can\'t be after End Date'])
 
         return self.cleaned_data
         

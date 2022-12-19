@@ -33,7 +33,8 @@
                         <td>{{ payment.start_date }}</td>
                         <td>{{ payment.end_date }}</td>
                         <td>Once every {{ payment.pay_once_per_n_days }} day(s)</td>
-                        <td><a style="display: block;" href="{% url 'bank_app:update_recurring_payment' payment.pk %}"><button>Update</button></a></td>
+                        <td><a href="{% url 'bank_app:update_recurring_payment' payment.pk %}"><button>Update</button></a>
+                        <a href="{% url 'bank_app:delete_recurring_payment' payment.pk %}"><button>Delete</button></a></td>
                         {% comment %} <td><a style="display: block;" href="{% url 'bank_app:pause_recurring_payment' loan.pk %}"><button>Stop</button></a></td> {% endcomment %}
                     </tr>
                 {% endfor %}
