@@ -25,6 +25,7 @@ class TransferForm(forms.Form):
         return self.cleaned_data
 
 class ExternalTransferForm(TransferForm):
+    to_bank = forms.CharField(label='Bank registration number', max_length=5)
     def clean(self):
         if self.cleaned_data.get('amount') <= 0:
             self._errors['amount'] = self.error_class(['Amount must be positive.'])

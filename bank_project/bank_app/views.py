@@ -5,7 +5,9 @@ from django.contrib.auth.decorators import login_required
 from .errors import InsufficientFunds
 
 from .forms import ExternalTransferForm, TransferForm, PayLoanForm
-from .models import Employee, Account, Ledger, Customer
+from .models import Employee, Account, Ledger, Customer, ExternalTransfer
+
+import httpx, os
 
 @login_required
 def index(request):
@@ -117,10 +119,20 @@ def make_external_transfer(request):
             debit_text = form.cleaned_data['debit_text']
             credit_account = form.cleaned_data['credit_account']
             credit_text = form.cleaned_data['credit_text']
+            to_bank = form.cleaned_data['to_bank']
             try:
                 # Beginning of external transfer protocol
-                print(credit_account)
-                ...
+                # 1. create external transfer locally
+                t = ExternalTransfer.objects.create(
+                    amount=amount,
+                    debit_account=debit_account,
+                    credit_account=credit_account,
+                    to_bank=to_bank,
+                    text=credit_text
+                )
+                # 2. either make the post request now, add task to queue or have cron job handle it, OR use signals
+                response = httpx.post(f'http://localhost:{to_bank}/bank/api/v1/transfer', data=t)
+                return account_details(request, ban=debit_account.pk)
             except InsufficientFunds:
                 context = {
                     'title': 'Transfer error',
