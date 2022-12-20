@@ -17,7 +17,7 @@ class ExternalTransfer(models.Model):
         max_length=9
     )
 
-    debit_account = models.ForeignKey(to='Account', on_delete=models.PROTECT)
+    debit_account = models.CharField(max_length=10)
     credit_account= models.CharField(max_length=10)
     to_bank = models.CharField(max_length=5)
     from_bank=models.CharField(max_length=5, default=os.getenv('BANK_REGISTRATION_NUMBER'))

@@ -6,6 +6,7 @@ from .errors import InsufficientFunds
 
 from .forms import ExternalTransferForm, TransferForm, PayLoanForm
 from .models import Employee, Account, Ledger, Customer, ExternalTransfer
+from .serializers import ExternalTransferSerializer
 
 import httpx, os
 
@@ -125,14 +126,18 @@ def make_external_transfer(request):
                 # 1. create external transfer locally
                 t = ExternalTransfer.objects.create(
                     amount=amount,
-                    debit_account=debit_account,
+                    debit_account=debit_account.ban,
                     credit_account=credit_account,
                     to_bank=to_bank,
                     text=credit_text
                 )
                 # 2. either make the post request now, add task to queue or have cron job handle it, OR use signals
-                response = httpx.post(f'http://localhost:{to_bank}/bank/api/v1/transfer', data=t)
+                data = ExternalTransferSerializer(t)
+                response = httpx.post(f'http://localhost:{to_bank}/bank/api/v1/transfer', data=data.data)
+                response.raise_for_status()
                 return account_details(request, ban=debit_account.pk)
+            except httpx.HTTPStatusError as err:
+                print(err)
             except InsufficientFunds:
                 context = {
                     'title': 'Transfer error',
