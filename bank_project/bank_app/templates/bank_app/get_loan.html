@@ -10,7 +10,7 @@
    {% endif %}
    <form action="{% url 'bank_app:get_loan' %}" method="POST">
       {% csrf_token %}
-      <label for="account_options" id="loan_ammount">Choose the account which should receive the loan money: </label>
+      <label for="account_options" id="loan_ammount">Enter desired loan amount</label>
       <input type="text" id="loan_ammount" name="amount" placeholder="Input Loan Amount">
       {% comment %} <input type="text" name="amount" placeholder="Input Account Number, which should receive"> {% endcomment %}
       <label for="account_options">Choose the account which should receive the loan money: </label>

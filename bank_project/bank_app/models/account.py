@@ -21,6 +21,10 @@ class Account(models.Model):
         return self.movements.aggregate(models.Sum('amount'))['amount__sum'] or Decimal(0)
 
     @property
+    def available_balance(self) -> Decimal:
+        ...
+
+    @property
     def movements(self) -> QuerySet:
         movements = Ledger.objects.filter(account=self, direct_transaction_with_bank=False).order_by('-created_at')
         # if self.is_loan:

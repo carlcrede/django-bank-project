@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
-
-
+from .api import ExternalTransferList, ExternalTransferDetail, ExternalTransferConfirm
 app_name = 'bank_app'
 
 urlpatterns = [
@@ -10,6 +9,7 @@ urlpatterns = [
    path('employee_dashboard/', views.employee_dashboard, name='employee_dashboard'), # to access it: localhost:8000/bank/employee_dashboard
    path('account_details/<str:ban>/', views.account_details, name='account_details'),
    path('make_transfer/', views.make_transfer, name='make_transfer'),
+   path('make_external_transfer/', views.make_external_transfer, name='make_external_transfer'),
    path('get_loan/', views.get_loan, name='get_loan'),
    path('pay_loan/', views.pay_loan, name='pay_loan'),
    path('transaction_details/<uuid:transaction_id>', views.transaction_details, name='transaction_details'),
@@ -29,4 +29,7 @@ urlpatterns = [
    path('add_recurring_payment/', views.add_recurring_payment, name='add_recurring_payment'), # to access it: localhost:8000/bank/add_recurring_payment
    path('update_recurring_payment/<int:pk>', views.update_recurring_payment, name='update_recurring_payment'), # to access it: localhost:8000/bank/update_recurring_payment
    path('delete_recurring_payment/<int:pk>', views.delete_recurring_payment, name='delete_recurring_payment'), # to access it: localhost:8000/bank/delete_recurring_payment
+   path('api/v1/transfer', ExternalTransferList.as_view()),
+   path('api/v1/transfer/<uuid:pk>', ExternalTransferDetail.as_view()),
+   path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
 ]

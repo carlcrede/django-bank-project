@@ -37,6 +37,10 @@ class Customer(models.Model):
         account = Account.objects.get(customer=self, ban=ban, is_loan=False, deactivated=False)
         return account
 
+    def account_by_name(self, name) -> Account:
+        account = Account.objects.get(customer=self, name=name, is_loan=False, deactivated=False)
+        return account
+
     @property
     def loans(self) -> QuerySet:
         return Account.objects.filter(customer=self, is_loan=True, deactivated=False)
@@ -93,3 +97,15 @@ class Customer(models.Model):
             loan_account.save()
 
         return customer_account
+
+    @classmethod
+    def default_bank_acc(cls):
+        user = cls.objects.get(user__username='bank')
+        acc = user.account_by_name('Bank OPS Account')
+        return acc
+
+    @classmethod
+    def external_transactions_acc(cls):
+        user = cls.objects.get(user__username='external-transfers')
+        acc = user.account_by_name('External Transactions Account')
+        return acc

@@ -2,6 +2,7 @@ import secrets, os, random
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from bank_app.models import Employee, Account, Ledger, Customer
+from django.conf import settings
 from faker import Faker
 fake = Faker(['da_DK'])
 Faker.seed(random.randint(0, 1_000_000))
@@ -33,6 +34,11 @@ class Command(BaseCommand):
             credit_text='Operational Credit',
             is_loan=True,
         )
+
+        # Create account for all external transactions
+        external_transfers_user = User.objects.create_user('external-transfers', password=secrets.token_urlsafe(64), is_active=False)
+        external_transfers_as_customer = Customer.objects.create(user=external_transfers_user)
+        external_transfers_account = Account.objects.create(customer=external_transfers_as_customer, name='External Transactions Account')
 
         # Create Employee User
 

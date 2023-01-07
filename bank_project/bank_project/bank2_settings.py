@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import environ
+environ.Env.read_env()
+BANK_REGISTRATION_NUMBER = os.environ['BANK2_REGISTRATION_NUMBER']
+
+from django.core.management.commands.runserver import Command as runserver
+runserver.default_port = BANK_REGISTRATION_NUMBER
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,11 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'django_crontab',
     'rest_framework',
     'bank_app',
     'login_app',
-    'django_rq',
+    'kronos',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +88,7 @@ WSGI_APPLICATION = 'bank_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / os.environ['BANK2_DB_FILE'],
     }
 }
 
@@ -128,28 +133,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Email Settings
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_TIMEOUT = 15
-EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "apikey"
-EMAIL_HOST_PASSWORD = "API_KEY_HERE"
-EMAIL_USE_TLS = False
-
-RQ_QUEUES = {
-    'default': {
-        'HOST': 'redis-10265.c250.eu-central-1-1.ec2.cloud.redislabs.com',
-        'PORT': '10265',
-        'USER': 'default',
-        'PASSWORD': 'n1lzL8tmFigDpW0Hzem8z3ebPnMLRUIw',
-        'DB': 0,
-        'DEFAULT_TIMEOUT': 360,
-    }
-}
-
-CRONJOBS = [
-    ('* * * * *', 'bank_app.cron.pay_recurring_payments',
-     '>> /workspace/django-bank-project/bank_project/scheduled_job.log')
-]
