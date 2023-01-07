@@ -1,11 +1,13 @@
 from django.shortcuts import HttpResponse, get_object_or_404, render, reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 
 from .errors import InsufficientFunds
 
 from .forms import ExternalTransferForm, TransferForm, PayLoanForm
 from .models import Employee, Account, Ledger, Customer, ExternalTransfer
+from .models.external_transfer import TransferStatus
 from .serializers import ExternalTransferSerializer
 
 import httpx, os
@@ -122,19 +124,40 @@ def make_external_transfer(request):
             credit_text = form.cleaned_data['credit_text']
             to_bank = form.cleaned_data['to_bank']
             try:
-                # Beginning of external transfer protocol
-                # 1. create external transfer locally
-                t = ExternalTransfer.objects.create(
-                    amount=amount,
-                    debit_account=debit_account.ban,
-                    credit_account=credit_account,
-                    to_bank=to_bank,
-                    text=credit_text
-                )
-                # 2. either make the post request now, add task to queue or have cron job handle it, OR use signals
+                with transaction.atomic():
+                    # 1. Create ledger from customer's account to bank's OPS account
+                    ops_acc = Customer.default_bank_acc()
+                    Ledger.transfer(amount, debit_account, debit_text, ops_acc, credit_text)
+
+                    # Beginning of external transfer protocol
+                    # 2. create external transfer locally
+                    t = ExternalTransfer.objects.create(
+                        amount=amount,
+                        debit_account=debit_account.ban,
+                        credit_account=credit_account,
+                        to_bank=to_bank,
+                        text=credit_text
+                    )
+                # 3. either make the post request now, add task to queue or have cron job handle it, OR use signals
                 data = ExternalTransferSerializer(t)
                 response = httpx.post(f'http://localhost:{to_bank}/bank/api/v1/transfer', data=data.data)
                 response.raise_for_status()
+
+                # 4. Create ledger from bank's ops account to external transactions account
+                external_transactions_acc = Customer.external_transactions_acc()
+                Ledger.transfer(amount, ops_acc, debit_text, external_transactions_acc, credit_text, direct_transaction_with_bank=True)
+
+                t.status = TransferStatus.CONFIRMED
+                t.save()
+
+                # 5.
+                # POST /confirm
+                response = httpx.get(f'http://localhost:{to_bank}/bank/api/v1/confirm/{t.pk}')
+                response.raise_for_status()
+
+                t.status = TransferStatus.COMPLETED
+                t.save()
+
                 return account_details(request, ban=debit_account.pk)
             except httpx.HTTPStatusError as err:
                 print(err)
@@ -144,6 +167,14 @@ def make_external_transfer(request):
                     'error': 'Insufficient funds for transfer'
                 }
                 return render(request, 'bank_app/error.html', context)
+            except Exception as e:
+                print(e)
+                context = {
+                    'title': 'Internal server error',
+                    'error': e.message
+                }
+                return render(request, 'bank_app/error.html', context)
+
 
     else:
         form = ExternalTransferForm()

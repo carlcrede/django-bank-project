@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import environ
+environ.Env.read_env()
+BANK_REGISTRATION_NUMBER = os.environ['BANK2_REGISTRATION_NUMBER']
+
+from django.core.management.commands.runserver import Command as runserver
+runserver.default_port = BANK_REGISTRATION_NUMBER
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'bank_app',
     'login_app',
+    'kronos',
 ]
 
 MIDDLEWARE = [
@@ -81,7 +88,7 @@ WSGI_APPLICATION = 'bank_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / os.environ['BANK2_DB_FILE'],
     }
 }
 

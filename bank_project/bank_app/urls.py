@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
-#from .api import ExternalTransferCreate, ExternalTransferConfirm, ExternalTransferCancel
-from .api import ExternalTransferList, ExternalTransferDetail
+from .api import ExternalTransferList, ExternalTransferDetail, ExternalTransferConfirm
 app_name = 'bank_app'
 
 urlpatterns = [
@@ -22,4 +21,5 @@ urlpatterns = [
    path('customer_details/<str:customer_username>/', views.customer_details, name='customer_details'), # to access it: localhost:8000/bank/customer_details
    path('api/v1/transfer', ExternalTransferList.as_view()),
    path('api/v1/transfer/<uuid:pk>', ExternalTransferDetail.as_view()),
+   path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
 ]

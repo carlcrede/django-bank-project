@@ -4,6 +4,16 @@ from .models import ExternalTransfer, TransferStatus
 import os
 
 
+@kronos.register('* * * * *')
+def test():
+    try:
+        response = httpx.get(
+            f'http://localhost:{8001}/bank/api/v1/transfer')
+        response.raise_for_status()
+    except httpx.RequestError as exc:
+        print(f'Error while requesting {exc.request.url!r}')
+    except httpx.HTTPError as exc:
+        print(f'Error response {exc.response.status_code} while requesting {exc.request.url!r}')
 
 @kronos.register('* * * * *')
 def confirm_reservation():

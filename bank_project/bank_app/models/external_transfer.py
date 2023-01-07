@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 import os
+from django.conf import settings
+from django.core.validators import MinValueValidator
 
 class TransferStatus(models.TextChoices):
     RESERVED = 'RESERVED', 'Reserved'
@@ -20,8 +22,8 @@ class ExternalTransfer(models.Model):
     debit_account = models.CharField(max_length=10)
     credit_account= models.CharField(max_length=10)
     to_bank = models.CharField(max_length=5)
-    from_bank=models.CharField(max_length=5, default=os.getenv('BANK_REGISTRATION_NUMBER'))
-    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    from_bank=models.CharField(max_length=5, default=settings.BANK_REGISTRATION_NUMBER)
+    amount = models.DecimalField(decimal_places=2, max_digits=10, validators=[MinValueValidator(0.0)])
     text = models.CharField(max_length=200, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
