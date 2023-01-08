@@ -42,9 +42,9 @@ class PayLoanForm(forms.Form):
 
     def clean(self):
         loan_account = self.cleaned_data.get('loan_account')
-        loan_account_balance = loan_account.balance
+        loan_account_balance = loan_account.available_balance
         customer_account = self.cleaned_data.get('customer_account')
-        customer_account_balance = customer_account.balance
+        customer_account_balance = customer_account.available_balance
 
         super().clean()
         if self.cleaned_data.get('amount') < 0:
@@ -86,7 +86,7 @@ class RecurringPaymentForm(forms.Form):
         super().clean()
         customer_account = self.cleaned_data.get('sender_account')
         print("customer_account: ", customer_account)
-        customer_account_balance = customer_account.balance
+        customer_account_balance = customer_account.available_balance
         
         # credit_account = self.cleaned_data.get('credit_account')
         # try:

@@ -31,7 +31,7 @@
                 <tr>
                     <td>{{ account.pk}} </td>
                     <td>{{ account.name }}</td>
-                    <td>{{ account.balance|intcomma }}</td>
+                    <td>{{ account.available_balance|intcomma }}</td>
                     <td>{{ account.created_at|date:'Y-n-d' }}</td>
                 </tr>
             </tbody>

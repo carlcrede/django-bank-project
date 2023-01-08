@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'bank_app',
     'login_app',
-    'kronos',
+    'django_rq',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +133,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'redis-10265.c250.eu-central-1-1.ec2.cloud.redislabs.com',
+        'PORT': '10265',
+        'USER': 'default',
+        'PASSWORD': 'n1lzL8tmFigDpW0Hzem8z3ebPnMLRUIw',
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    }
+}

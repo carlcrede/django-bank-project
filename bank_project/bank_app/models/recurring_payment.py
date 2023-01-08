@@ -3,8 +3,7 @@ from django.db import models, transaction
 from  django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime, timedelta
 import django_rq
-from . import Ledger
-
+from bank_app.models import Ledger
 
 
 class Recurring_Payment(models.Model):

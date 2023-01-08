@@ -17,8 +17,9 @@ class ExternalTransferList(APIView):
         serializer = ExternalTransferSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                if not ExternalTransfer.objects.filter(idempotency_key=serializer.initial_data['idempotency_key']):
+                    serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
             except Exception as e:
                 print(e)
                 return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -44,17 +45,27 @@ class ExternalTransferConfirm(APIView):
             raise Http404
 
     def get(self, request, pk):
-        t = self.get_object(pk)
-        customer_acc = Account.objects.get(ban=t.credit_account)
+        external_transfer = self.get_object(pk)
+        if external_transfer.status == TransferStatus.COMPLETED:
+            return Response(status=status.HTTP_200_OK)
+        customer_acc = Account.objects.get(ban=external_transfer.credit_account)
         external_transactions_acc = Customer.external_transactions_acc()
-        bank_acc = Customer.default_bank_acc()
         try:
-            with transaction.atomic():
-                Ledger.transfer(t.amount, external_transactions_acc, t.text, bank_acc, t.text, direct_transaction_with_bank=True)
-                Ledger.transfer(t.amount, bank_acc, t.text, customer_acc, t.text)
-                t.status = TransferStatus.COMPLETED
-                t.save()
+            Ledger.transfer(
+                amount=external_transfer.amount, 
+                debit_account=external_transactions_acc, 
+                debit_text=external_transfer.text, 
+                credit_account=customer_acc,
+                credit_text=external_transfer.text,
+                external_transfer=True
+            )
+            external_transfer.status = TransferStatus.COMPLETED
+            external_transfer.save()
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ExternalTransferFailed(APIView):
+    def patch(self, request, pk):
+        ...

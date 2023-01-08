@@ -1,9 +1,10 @@
 from decimal import Decimal
-from enum import unique
+from bank_app.models import ExternalTransfer, TransferStatus
 from django.db import models
 from django.db.models.query import QuerySet
-from .ledger import Ledger
 from ..util import gen_ban, gen_iban
+from django.db.models import Q
+from bank_app.models import Ledger
 
 class Account(models.Model):
     # maybe generate more realistic account id (IBAN) with schwifty
@@ -22,7 +23,14 @@ class Account(models.Model):
 
     @property
     def available_balance(self) -> Decimal:
-        ...
+        actual_balance = self.balance
+        sent_transactions = (
+            ExternalTransfer.objects
+            .filter(Q(debit_account=self.ban))
+            .exclude(Q(status=TransferStatus.COMPLETED) | Q(status=TransferStatus.FAILED))
+            .aggregate(models.Sum('amount'))['amount__sum']
+        or 0) * -1
+        return sum([actual_balance, sent_transactions])
 
     @property
     def movements(self) -> QuerySet:

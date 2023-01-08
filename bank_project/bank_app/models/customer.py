@@ -2,9 +2,8 @@ from __future__ import annotations
 from django.db import models, transaction
 from django.db.models.query import QuerySet
 from django.contrib.auth.models import User
-from .account import Account
-from .ledger import Ledger
 from datetime import datetime
+from bank_app.models import Account, Ledger
 
 
 class Customer(models.Model):
@@ -41,6 +40,18 @@ class Customer(models.Model):
         account = Account.objects.get(customer=self, name=name, is_loan=False, deactivated=False)
         return account
 
+    @classmethod
+    def default_bank_acc(cls):
+        user = cls.objects.get(user__username='bank')
+        acc = user.account_by_name('Bank OPS Account')
+        return acc
+
+    @classmethod
+    def external_transactions_acc(cls):
+        user = cls.objects.get(user__username='external-transfers')
+        acc = user.account_by_name('External Transactions Account')
+        return acc
+
     @property
     def loans(self) -> QuerySet:
         return Account.objects.filter(customer=self, is_loan=True, deactivated=False)
@@ -56,7 +67,7 @@ class Customer(models.Model):
     def get_loan(self, ban, amount):
         # get bank account, create loan account(assigned to customer) -> tranfer(ledger table) between bank and loan the amount
         # get customer's account by ban -> transfer from loan account to customer account the amount
-        bank_account = Account.objects.get(ban="021578155")
+        bank_account = Account.objects.get(ban=self.default_bank_acc().ban)
         customer_account = self.account(ban)
 
         with transaction.atomic():
@@ -83,7 +94,7 @@ class Customer(models.Model):
 
         # transfer from customer account to loan account the amount
         # get bank account -> tranfer amount from loan to bank account
-        bank_account = Account.objects.get(ban="021578155")
+        bank_account = Account.objects.get(ban=self.default_bank_acc().ban)
 
         with transaction.atomic():
             transfer_from_customer_account_to_loan = Ledger.transfer(amount=float(
@@ -92,20 +103,9 @@ class Customer(models.Model):
                                                          credit_account=bank_account, credit_text="credit to bank", is_loan=True, direct_transaction_with_bank=True)
 
         # ALSO check that the amount paid is not more than the loan amount
-        if loan_account.balance >= 0:
+        if loan_account.available_balance >= 0:
             loan_account.deactivated = True
             loan_account.save()
 
         return customer_account
 
-    @classmethod
-    def default_bank_acc(cls):
-        user = cls.objects.get(user__username='bank')
-        acc = user.account_by_name('Bank OPS Account')
-        return acc
-
-    @classmethod
-    def external_transactions_acc(cls):
-        user = cls.objects.get(user__username='external-transfers')
-        acc = user.account_by_name('External Transactions Account')
-        return acc

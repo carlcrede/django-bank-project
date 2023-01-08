@@ -1,24 +1,19 @@
+import pyotp, os, base64, subprocess, httpx, django_rq
+
+from rq import Retry
 from django.shortcuts import HttpResponse, get_object_or_404, render, reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-import pyotp
-import os
-import base64
-import subprocess
 from django.core.mail import send_mail
 from django.core import mail
 from datetime import datetime
 from django.db import transaction
 
-
 from .errors import InsufficientFunds, NotEverythingProvided
-
 from .forms import ExternalTransferForm, TransferForm, PayLoanForm, RecurringPaymentForm
-from .models import Employee, Account, Ledger, Customer, ExternalTransfer
-from .models.external_transfer import TransferStatus
+from bank_app.models import Employee, Account, Ledger, Customer, ExternalTransfer, Recurring_Payment
+from bank_app.models.external_transfer import transfer_failed
 from .serializers import ExternalTransferSerializer
-
-import httpx, os, Recurring_Payment
 
 
 @login_required
@@ -129,7 +124,6 @@ def make_transfer(request):
     }
     return render(request, 'bank_app/make_transfer.html', context)
 
-
 @login_required
 def make_external_transfer(request):
     assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
@@ -146,39 +140,20 @@ def make_external_transfer(request):
             to_bank = form.cleaned_data['to_bank']
             try:
                 with transaction.atomic():
-                    # 1. Create ledger from customer's account to bank's OPS account
-                    ops_acc = Customer.default_bank_acc()
-                    Ledger.transfer(amount, debit_account, debit_text, ops_acc, credit_text)
-
-                    # Beginning of external transfer protocol
-                    # 2. create external transfer locally
-                    t = ExternalTransfer.objects.create(
+                    t = ExternalTransfer.create(
                         amount=amount,
-                        debit_account=debit_account.ban,
+                        debit_account=debit_account,
                         credit_account=credit_account,
                         to_bank=to_bank,
                         text=credit_text
                     )
-                # 3. either make the post request now, add task to queue or have cron job handle it, OR use signals
                 data = ExternalTransferSerializer(t)
-                response = httpx.post(f'http://localhost:{to_bank}/bank/api/v1/transfer', data=data.data)
-                response.raise_for_status()
-
-                # 4. Create ledger from bank's ops account to external transactions account
-                external_transactions_acc = Customer.external_transactions_acc()
-                Ledger.transfer(amount, ops_acc, debit_text, external_transactions_acc, credit_text, direct_transaction_with_bank=True)
-
-                t.status = TransferStatus.CONFIRMED
-                t.save()
-
-                # 5.
-                # POST /confirm
-                response = httpx.get(f'http://localhost:{to_bank}/bank/api/v1/confirm/{t.pk}')
-                response.raise_for_status()
-
-                t.status = TransferStatus.COMPLETED
-                t.save()
-
+                ext_t_acc = Customer.external_transactions_acc()
+                django_rq.enqueue(
+                    ExternalTransfer.transfer, data, t, ext_t_acc, debit_account,
+                    retry=Retry(max=3, interval=5),
+                    on_failure=transfer_failed,
+                )
                 return account_details(request, ban=debit_account.pk)
             except httpx.HTTPStatusError as err:
                 print(err)
@@ -189,14 +164,11 @@ def make_external_transfer(request):
                 }
                 return render(request, 'bank_app/error.html', context)
             except Exception as e:
-                print(e)
                 context = {
                     'title': 'Internal server error',
                     'error': e.message
                 }
                 return render(request, 'bank_app/error.html', context)
-
-
     else:
         form = ExternalTransferForm()
     

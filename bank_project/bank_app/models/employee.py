@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-from .customer import Customer
-from .account import Account
+#from .customer import Customer
+#from .account import Account
+from bank_app.models import Customer, Account
 import uuid
 
 

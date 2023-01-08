@@ -21,4 +21,9 @@ class Migration(migrations.Migration):
             name='idempotency_key',
             field=models.UUIDField(default=uuid.UUID('cb6d6e91-728a-461e-a309-e1dbedaee7ab'), primary_key=True, serialize=False, unique=True),
         ),
+        migrations.AlterField(
+            model_name='externaltransfer',
+            name='debit_account',
+            field=models.CharField(max_length=10),
+        ),
     ]
