@@ -1,7 +1,8 @@
 from uuid import uuid4
 from django.db import models, transaction
 from ..errors import InsufficientFunds
-
+from django.db.models.signals import post_save,pre_save
+from django.dispatch import receiver
 
 class Ledger(models.Model):
     transaction_id = models.UUIDField()
@@ -34,3 +35,14 @@ class Ledger(models.Model):
         ledgers = cls.objects.all()
         balance = ledgers.aggregate(models.Sum('amount'))['amount__sum']
         return balance
+        
+
+    
+@receiver(post_save, sender=Ledger, dispatch_uid="post_save_ledger_notification")
+def post_save_ledger_notification(sender, instance, **kwargs):
+    print("**** Ledger signal received")
+#    print(sender.objects.get(id=instance.id).transaction_id)
+    if instance.amount > 0:
+        print(f'{instance.account} received {abs(instance.amount)} dkk with text: "{instance.text}"')
+    else:
+        print(f'{instance.account} sent {abs(instance.amount)} dkk with text: "{instance.text}"')

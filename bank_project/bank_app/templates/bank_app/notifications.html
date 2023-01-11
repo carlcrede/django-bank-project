@@ -1,0 +1,41 @@
+{% extends "bank_app/base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+
+{% include 'bank_app/customer_dashboard_nav.html' %}
+
+    <article>
+        <h2>My Notifications</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Today</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notification in notifications %}
+                    <tr>
+                        <td>{{ notification.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table>
+            <thead>
+                <tr>
+                    <th>Earlier</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notification in notifications %}
+                    <tr>
+                        <td>{{ notification.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+{% endblock %}

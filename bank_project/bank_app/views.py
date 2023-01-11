@@ -659,3 +659,7 @@ def delete_recurring_payment(request, pk):
     recurring_payment = Recurring_Payment.objects.get(pk=pk)
     recurring_payment.delete()
     return recurring_payments(request)
+
+def notifications(request):
+    context = {}
+    return render(request, 'bank_app/notifications.html', context)

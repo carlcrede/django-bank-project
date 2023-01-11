@@ -4,6 +4,8 @@ from django.db.models.query import QuerySet
 from django.contrib.auth.models import User
 from datetime import datetime
 from bank_app.models import Account, Ledger
+from django.db.models.signals import post_save,pre_save
+from django.dispatch import receiver
 
 
 class Customer(models.Model):
@@ -109,3 +111,7 @@ class Customer(models.Model):
 
         return customer_account
 
+@receiver(post_save, sender=Customer, dispatch_uid="post_save_customer_notification")
+def post_save_customer_notification(sender, instance, **kwargs):
+    print("**** Customer signal received")
+    print(f'Customer rank changed from {sender.objects.get(id=instance.id).rank} to {instance.rank}')

@@ -1,6 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from .api import ExternalTransferList, ExternalTransferDetail, ExternalTransferConfirm
+import notifications.urls
+
+
+
 app_name = 'bank_app'
 
 urlpatterns = [
@@ -32,4 +36,5 @@ urlpatterns = [
    path('api/v1/transfer', ExternalTransferList.as_view()),
    path('api/v1/transfer/<uuid:pk>', ExternalTransferDetail.as_view()),
    path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
+   path('notifications/', views.notifications, name='notifications'), # to access it: localhost:8000/bank/notifications
 ]

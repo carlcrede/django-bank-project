@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'django_crontab',
+    # third party apps
     'rest_framework',
+    'notifications',
+    # local apps
     'bank_app',
     'login_app',
     'django_rq',
@@ -153,3 +156,6 @@ CRONJOBS = [
     ('* * * * *', 'bank_app.cron.pay_recurring_payments',
      '>> /workspace/django-bank-project/bank_project/scheduled_job.log')
 ]
+
+
+DJANGO_NOTIFICATIONS_CONFIG = { 'USE_JSONFIELD': True}
