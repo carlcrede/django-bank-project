@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Customer, Account
+from .models import Customer, Account, Stock
 from datetime import datetime
 
 
@@ -35,9 +35,9 @@ class ExternalTransferForm(TransferForm):
 
 class PayLoanForm(forms.Form):
     amount = forms.DecimalField(label='Amount', max_digits=10)
-    customer_account = forms.ModelChoiceField(label='Debit Account', queryset=Customer.objects.none())
+    customer_account = forms.ModelChoiceField(label='Debit Account', queryset=Account.objects.none())
     customer_text = forms.CharField(label='Debit Text', max_length=200)
-    loan_account = forms.ModelChoiceField(label='Loan Account', queryset=Customer.objects.none())
+    loan_account = forms.ModelChoiceField(label='Loan Account', queryset=Account.objects.none())
     loan_text = forms.CharField(label='Loan Text', max_length=200)
 
     def clean(self):
@@ -70,7 +70,7 @@ class PayLoanForm(forms.Form):
         return self.cleaned_data
 
 class RecurringPaymentForm(forms.Form):
-    sender_account = forms.ModelChoiceField(label='Your Account', queryset=Customer.objects.none())
+    sender_account = forms.ModelChoiceField(label='Your Account', queryset=Account.objects.none())
     receiver_account = forms.CharField(label='Reciever\'s Account number')
     amount = forms.DecimalField(label='Amount', max_digits=10)
     text = forms.CharField(label='Message', max_length=200)
@@ -107,3 +107,22 @@ class RecurringPaymentForm(forms.Form):
 
         return self.cleaned_data
         
+    
+class StockForm(forms.Form):
+    stock = forms.ModelChoiceField(label='Choose Stock', queryset=Stock.objects.none())
+    stock_volume = forms.IntegerField(label='Stock Amount')
+    customer_account = forms.ModelChoiceField(label='Account used for payment', queryset=Account.objects.none())
+
+    def clean(self):
+        super().clean()
+
+        # credit_account = self.cleaned_data.get('credit_account')
+        # try:
+        #     Account.objects.get(pk=credit_account)
+        # except ObjectDoesNotExist:
+        #     self._errors['credit_account'] = self.error_class(['Credit account not found.'])
+
+        # if self.buyer_account.get('amount') <= 0:
+        #     self._errors['amount'] = self.error_class(['Amount must be positive.'])
+
+        # return self.cleaned_data

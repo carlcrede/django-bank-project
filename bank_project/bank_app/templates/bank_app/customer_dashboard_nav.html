@@ -4,6 +4,7 @@
     <a href="{% url 'bank_app:make_transfer' %}">Make transfer</a>&nbsp;&nbsp;|&nbsp;
     <a href="{% url 'bank_app:make_external_transfer' %}">Make External Transfer</a>&nbsp;&nbsp;|&nbsp;
     <a href="{% url 'bank_app:recurring_payments' %}">Recurring Payments</a>&nbsp;&nbsp;|&nbsp;
+    <a href="{% url 'bank_app:stocks' %}">Stocks</a>&nbsp;&nbsp;|&nbsp;
     {% if user.customer.rank != "BASIC"%}
         <a href="{% url 'bank_app:get_loan' %}">Get loan</a>&nbsp;&nbsp;|&nbsp;
         <a href="{% url 'bank_app:pay_loan' %}">Pay loan</a>&nbsp;&nbsp;|&nbsp;

@@ -32,4 +32,8 @@ urlpatterns = [
    path('api/v1/transfer', ExternalTransferList.as_view()),
    path('api/v1/transfer/<uuid:pk>', ExternalTransferDetail.as_view()),
    path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
+   path('stocks/', views.stocks, name='stocks'), # to access it: localhost:8000/bank/delete_recurring_payment
+   path('buy_stocks/', views.buy_stocks, name='buy_stocks'), # to access it: localhost:8000/bank/buy_stocks
+   path('sell_stocks/', views.sell_stocks, name='sell_stocks'), # to access it: localhost:8000/bank/sell_stocks
+   # path('buy_stocks/<str:stock_symbol>', views.buy_stocks, name='buy_stocks'), # to access it: localhost:8000/bank/delete_recurring_payment
 ]
