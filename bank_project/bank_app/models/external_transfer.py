@@ -5,7 +5,6 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from bank_app.models import Ledger
 from ..errors import InsufficientFunds
-import logging
 
 class TransferStatus(models.TextChoices):
     RESERVED = 'RESERVED', 'Reserved'
@@ -45,12 +44,14 @@ class ExternalTransfer(models.Model):
         )
 
     @classmethod
-    def transfer(cls, serialized_data, external_transfer, external_t_acc, debit_account):
-        # step 3
+    def reserve_transfer(cls, serialized_data, external_transfer, external_t_acc, debit_account):
         response = httpx.post(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/transfer', json=serialized_data.data)
         response.raise_for_status()
+
+        # If reaching this line, we know the receiving bank has created the external transfer in RESERVED state
         django_rq.enqueue(
-            confirm_transfer, 
+            confirm_local_transfer,
+            serialized_data, 
             external_transfer, 
             external_t_acc,
             debit_account,
@@ -58,33 +59,7 @@ class ExternalTransfer(models.Model):
             on_failure=transfer_failed
         )
 
-def transfer_failed(job, connection, type, value, traceback):
-    if job.retries_left:
-        return
-
-    external_transfer = job.args[1]
-    # Transfer job failed
-    # Change ExternalTransfer status to failed
-    # let receiving bank know transfer is failed
-    if external_transfer.status == TransferStatus.RESERVED:
-        external_transfer.status = TransferStatus.FAILED
-        external_transfer.save()
-        #httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/failed/{external_transfer.pk}')
-
-
-    # Confirm job failed
-    if external_transfer.status == TransferStatus.CONFIRMED:
-        external_transfer.status = TransferStatus.FAILED
-        external_transfer.save()
-
-    # Complete job failed
-    if external_transfer.status == TransferStatus.COMPLETED:
-        ...
-    
-    print('last retry failed')
-    logging.debug('last retry failed')
-
-def confirm_transfer(external_transfer, external_t_acc, debit_account):
+def confirm_local_transfer(serialized_data, external_transfer, external_t_acc, debit_account):
     try:
         with transaction.atomic():
             Ledger.transfer(
@@ -101,17 +76,67 @@ def confirm_transfer(external_transfer, external_t_acc, debit_account):
     except DatabaseError as err:
         raise err
     
-
     django_rq.enqueue(
-        complete_transfer, 
+        confirm_transfer,
+        serialized_data,
         external_transfer,
+        external_t_acc,
+        debit_account,
         retry=Retry(max=3, interval=5),
         on_failure=transfer_failed
     )
 
-def complete_transfer(external_transfer):
+def confirm_transfer(serialized_data, external_transfer, external_t_acc, debit_acc):
     response = httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/confirm/{external_transfer.pk}')
     response.raise_for_status()
 
     external_transfer.status = TransferStatus.COMPLETED
     external_transfer.save()
+
+    django_rq.enqueue(
+        complete_transfer,
+        serialized_data,
+        external_transfer,
+        external_t_acc,
+        debit_acc,
+        retry=Retry(max=3, interval=5),
+        on_failure=transfer_failed
+    )
+
+def complete_transfer(serialized_data, external_transfer, external_t_acc, debit_acc):
+    response = httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/complete/{external_transfer.pk}')
+    response.raise_for_status()
+
+def transfer_failed(job, connection, type, value, traceback):
+    if job.retries_left:
+        return
+
+    external_transfer = job.args[1]
+    external_t_acc = job.args[2]
+    customer_acc = job.args[3]
+   
+    if (
+        external_transfer.status == TransferStatus.RESERVED or 
+        external_transfer.status == TransferStatus.CONFIRMED
+    ):
+        external_transfer.status = TransferStatus.FAILED
+        external_transfer.save()
+        httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/failed/{external_transfer.pk}')
+
+    if external_transfer.status == TransferStatus.COMPLETED:
+        try:
+            with transaction.atomic():
+                Ledger.transfer(
+                    amount=external_transfer.amount,
+                    debit_account=external_t_acc,
+                    debit_text='external transfer reversal',
+                    credit_account=customer_acc,
+                    credit_text='external transfer reversal',
+                    direct_transaction_with_bank=True
+                )
+                external_transfer.status = TransferStatus.FAILED
+                external_transfer.save()
+        except Exception as exc:
+            print('Something has gone really wrong :(', exc)
+        
+        httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/failed/{external_transfer.pk}')
