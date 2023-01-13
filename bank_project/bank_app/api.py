@@ -116,7 +116,7 @@ class ExternalTransferFailed(APIView):
                         credit_text='external transfer reversal',
                         direct_transaction_with_bank=True
                     )
-                    external_transfer.status = TransferStatus.CONFIRMED
+                    external_transfer.status = TransferStatus.FAILED
                     external_transfer.save()
                 return Response(status=status.HTTP_200_OK)
         except Exception as exc:
