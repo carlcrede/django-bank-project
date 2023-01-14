@@ -725,11 +725,12 @@ def buy_stocks(request, stock_symbol=None):
                 # Recurring_Payment.pay_recurring_payments_for_today()
                 return stocks(request)
             except InsufficientFunds:
-                context = {
-                    'title': 'Payment error',
-                    'error': 'Insufficient funds to set a recurring payment'
-                }
-                return render(request, 'bank_app/error.html', context)
+                form._errors['customer_account'] = form.error_class([f'Not enough funds to perform the purchase'])
+                # context = {
+                #     'title': 'Payment error',
+                #     'error': 'Insufficient funds to set a recurring payment'
+                # }
+                # return render(request, 'bank_app/error.html', context)
 
     else:
         form = StockForm()

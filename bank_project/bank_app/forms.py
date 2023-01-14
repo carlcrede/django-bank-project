@@ -116,6 +116,14 @@ class StockForm(forms.Form):
     def clean(self):
         super().clean()
 
+        if self.cleaned_data.get('stock_volume') < 0:
+            self._errors['stock_volume'] = self.error_class(['Stock volume must be positive.'])
+        
+        stock_volume_of_the_chosen_stock = self.cleaned_data.get('stock').stock_volume
+        if stock_volume_of_the_chosen_stock < self.cleaned_data.get('stock_volume'):
+            self._errors['stock_volume'] = self.error_class([f'Chosen stock volume is bigger then what is available. Currently the stock volume is: {stock_volume_of_the_chosen_stock}'])
+
+        
         # credit_account = self.cleaned_data.get('credit_account')
         # try:
         #     Account.objects.get(pk=credit_account)

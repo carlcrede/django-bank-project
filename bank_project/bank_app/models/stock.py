@@ -37,11 +37,15 @@ class Stock(models.Model):
     def stock(cls, customer, stock_symbol):
         print("Stock > stock > customer: ", customer)
         print("Stock > stock > stock_symbol: ", stock_symbol)
-        return cls.objects.filter(belongs_to=customer, stock_symbol=stock_symbol)[0]
-        ticker = yf.Ticker(stock_symbol)
-        available_stock = cls(ticker.info["longName"], ticker.info["symbol"],
-                              ticker.info["currentPrice"], ticker.info["currency"])
-        return available_stock
+        stock_of_buyer = cls.objects.filter(belongs_to=customer, stock_symbol=stock_symbol)
+        if stock_of_buyer.count():
+            stock_of_buyer = stock_of_buyer[0]
+        print("Stock > stock > stock_of_buyer: ", stock_of_buyer)
+        return stock_of_buyer
+        # ticker = yf.Ticker(stock_symbol)
+        # available_stock = cls(ticker.info["longName"], ticker.info["symbol"],
+        #                       ticker.info["currentPrice"], ticker.info["currency"])
+        # return available_stock
 
     @classmethod
     def stock_by_id(cls, stock_uuid):
