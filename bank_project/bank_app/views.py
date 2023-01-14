@@ -181,6 +181,14 @@ def make_external_transfer(request):
     }
     return render(request, 'bank_app/make_external_transfer.html', context)
 
+@login_required
+def loans(request):
+    print("In the loans view")
+    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+
+    customer_loans = request.user.customer.loans
+    context = {'loans': customer_loans }
+    return render(request, 'bank_app/loans.html', context)
 
 @login_required
 def get_loan(request):
