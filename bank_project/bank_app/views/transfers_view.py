@@ -87,7 +87,7 @@ def make_external_transfer(request):
                     retry=Retry(max=3, interval=5),
                     on_failure=transfer_failed,
                 )
-                return account_details(request, ban=debit_account.pk)
+                return external_transfers_overview(request)
             except httpx.HTTPStatusError as err:
                 print(err)
             except InsufficientFunds:
@@ -110,3 +110,11 @@ def make_external_transfer(request):
         'form': form
     }
     return render(request, 'bank_app/make_external_transfer.html', context)
+
+@login_required
+def external_transfers_overview(request):
+    external_transfers = request.user.customer.external_transfers_sent.order_by('-created_at')[:10]
+    context = {
+        'external_transfers': external_transfers
+    }
+    return render(request, 'bank_app/external_transfers_overview.html', context)

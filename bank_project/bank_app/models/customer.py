@@ -1,12 +1,13 @@
 from __future__ import annotations
 from django.db import models, transaction
 from django.db.models.query import QuerySet
+from django.db.models import Q
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .notification import Notification
-from bank_app.models import Account, Ledger, Stock
+from bank_app.models import Account, Ledger, Stock, ExternalTransfer
 
 
 class Customer(models.Model):
@@ -78,6 +79,13 @@ class Customer(models.Model):
     @property
     def unread_count(self):
         return Notification.objects.filter(customer = self, is_read=False).count()
+
+    @property
+    def external_transfers_sent(self):
+        external_transfers = ExternalTransfer.objects.filter(
+            Q(debit_account__in=self.accounts)
+        )
+        return external_transfers
 
     def get_loan(self, ban, amount):
         # get bank account, create loan account(assigned to customer) -> tranfer(ledger table) between bank and loan the amount

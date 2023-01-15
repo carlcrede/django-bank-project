@@ -1,0 +1,40 @@
+{% extends "bank_app/base.html" %}
+
+{% load humanize %}
+
+{% block title %}External transfers overview{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    {% if is_employee %}
+        {% include 'bank_app/employee_dashboard_nav.html' %}
+    {% else %}
+        {% include 'bank_app/customer_dashboard_nav.html' %}
+    {% endif %}
+{% endif %}
+<article>
+    <table>
+        <thead>
+            <tr>
+                <th>Amount</th>
+                <th>Debit account</th>
+                <th>Credit account</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in external_transfers %}
+            <tr>
+                <td>{{ t.amount }}</td>
+                <td>{{ t.debit_account }}</td>
+                <td>{{ t.credit_account }}</td>
+                <td>{{ t.status }}</td>
+                <td>{{ t.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><a href="{% url 'bank_app:index' %}">Back</a></p>
+</article>
+{% endblock %}

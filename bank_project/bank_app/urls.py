@@ -10,6 +10,7 @@ urlpatterns = [
    path('account_details/<str:ban>/', shared_view.account_details, name='account_details'),
    path('make_transfer/', transfers_view.make_transfer, name='make_transfer'),
    path('make_external_transfer/', transfers_view.make_external_transfer, name='make_external_transfer'),
+   path('external_transfers_overview/', transfers_view.external_transfers_overview, name='external_transfers_overview'),
    path('loans/', loans_view.loans, name='loans'),
    path('get_loan/', loans_view.get_loan, name='get_loan'),
    path('pay_loan/', loans_view.pay_loan, name='pay_loan'),
@@ -30,12 +31,12 @@ urlpatterns = [
    path('add_recurring_payment/', recurring_payments_view.add_recurring_payment, name='add_recurring_payment'), # to access it: localhost:8000/bank/add_recurring_payment
    path('update_recurring_payment/<int:pk>', recurring_payments_view.update_recurring_payment, name='update_recurring_payment'), # to access it: localhost:8000/bank/update_recurring_payment
    path('delete_recurring_payment/<int:pk>', recurring_payments_view.delete_recurring_payment, name='delete_recurring_payment'), # to access it: localhost:8000/bank/delete_recurring_payment
-   path('api/v1/transfer', ExternalTransferList.as_view()),
-   path('api/v1/transfer/<uuid:pk>', ExternalTransferDetail.as_view()),
-   path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
    path('stocks/', stocks_view.stocks, name='stocks'), # to access it: localhost:8000/bank/delete_recurring_payment
    path('buy_stocks/', stocks_view.buy_stocks, name='buy_stocks'), # to access it: localhost:8000/bank/buy_stocks
    path('sell_stocks/', stocks_view.sell_stocks, name='sell_stocks'), # to access it: localhost:8000/bank/sell_stocks
+   path('api/v1/transfer', ExternalTransferList.as_view()),
+   path('api/v1/transfer/<uuid:pk>', ExternalTransferDetail.as_view()),
+   path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
    path('api/v1/complete/<uuid:pk>', ExternalTransferComplete.as_view()),
    path('api/v1/failed/<uuid:pk>', ExternalTransferFailed.as_view()),
    path('notifications/', notifications_view.notifications, name='notifications'),
