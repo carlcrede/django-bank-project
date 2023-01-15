@@ -44,8 +44,8 @@ class ExternalTransfer(models.Model):
         )
 
     @classmethod
-    def reserve_transfer(cls, serialized_data, external_transfer, external_t_acc, debit_account):
-        response = httpx.post(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/transfer', json=serialized_data.data)
+    def reserve_transfer(cls, serialized_data, external_transfer, external_t_acc, debit_account, bank_url):
+        response = httpx.post(f'http://{bank_url}/bank/api/v1/transfer', json=serialized_data.data)
         response.raise_for_status()
 
         # If reaching this line, we know the receiving bank has created the external transfer in RESERVED state
@@ -55,11 +55,12 @@ class ExternalTransfer(models.Model):
             external_transfer, 
             external_t_acc,
             debit_account,
+            bank_url,
             retry=Retry(max=3, interval=5),
             on_failure=transfer_failed
         )
 
-def confirm_local_transfer(serialized_data, external_transfer, external_t_acc, debit_account):
+def confirm_local_transfer(serialized_data, external_transfer, external_t_acc, debit_account, bank_url):
     try:
         with transaction.atomic():
             Ledger.transfer(
@@ -82,12 +83,13 @@ def confirm_local_transfer(serialized_data, external_transfer, external_t_acc, d
         external_transfer,
         external_t_acc,
         debit_account,
+        bank_url,
         retry=Retry(max=3, interval=5),
         on_failure=transfer_failed
     )
 
-def confirm_transfer(serialized_data, external_transfer, external_t_acc, debit_acc):
-    response = httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/confirm/{external_transfer.pk}')
+def confirm_transfer(serialized_data, external_transfer, external_t_acc, debit_acc, bank_url):
+    response = httpx.get(f'http://{bank_url}/bank/api/v1/confirm/{external_transfer.pk}')
     response.raise_for_status()
 
     external_transfer.status = TransferStatus.COMPLETED
@@ -99,12 +101,13 @@ def confirm_transfer(serialized_data, external_transfer, external_t_acc, debit_a
         external_transfer,
         external_t_acc,
         debit_acc,
+        bank_url,
         retry=Retry(max=3, interval=5),
         on_failure=transfer_failed
     )
 
-def complete_transfer(serialized_data, external_transfer, external_t_acc, debit_acc):
-    response = httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/complete/{external_transfer.pk}')
+def complete_transfer(serialized_data, external_transfer, external_t_acc, debit_acc, bank_url):
+    response = httpx.get(f'http://{bank_url}/bank/api/v1/complete/{external_transfer.pk}')
     response.raise_for_status()
 
 def transfer_failed(job, connection, type, value, traceback):
@@ -114,6 +117,7 @@ def transfer_failed(job, connection, type, value, traceback):
     external_transfer = job.args[1]
     external_t_acc = job.args[2]
     customer_acc = job.args[3]
+    bank_url = job.args[4]
    
     if (
         external_transfer.status == TransferStatus.RESERVED or 
@@ -121,7 +125,7 @@ def transfer_failed(job, connection, type, value, traceback):
     ):
         external_transfer.status = TransferStatus.FAILED
         external_transfer.save()
-        httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/failed/{external_transfer.pk}')
+        httpx.get(f'http://{bank_url}/bank/api/v1/failed/{external_transfer.pk}')
 
     if external_transfer.status == TransferStatus.COMPLETED:
         try:
@@ -139,4 +143,4 @@ def transfer_failed(job, connection, type, value, traceback):
         except Exception as exc:
             print('Something has gone really wrong :(', exc)
         
-        httpx.get(f'http://localhost:{external_transfer.to_bank}/bank/api/v1/failed/{external_transfer.pk}')
+        httpx.get(f'http://{bank_url}/bank/api/v1/failed/{external_transfer.pk}')

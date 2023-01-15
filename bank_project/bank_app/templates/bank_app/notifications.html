@@ -1,0 +1,19 @@
+{% extends "bank_app/base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+
+{% include 'bank_app/customer_dashboard_nav.html' %}
+{% load static %}
+<article>
+    <h2>My Notifications</h2>
+
+    <div hx-get="{% url 'bank_app:notifications_list' %}" hx-trigger="load, every 10s" hx-target="#notifications_list">
+
+    </div>
+    <div id="notifications_list">
+    </div>
+</article>
+
+{% endblock %}

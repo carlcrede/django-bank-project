@@ -1,7 +1,9 @@
 from uuid import uuid4
 from django.db import models, transaction
 from ..errors import InsufficientFunds
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .notification import Notification
 
 class Ledger(models.Model):
     transaction_id = models.UUIDField()
@@ -34,3 +36,21 @@ class Ledger(models.Model):
         ledgers = cls.objects.all()
         balance = ledgers.aggregate(models.Sum('amount'))['amount__sum']
         return balance
+
+# Send signal to the customer when a ledger row that includes them is created
+@receiver(post_save, sender=Ledger, dispatch_uid="post_save_ledger_notification")
+def post_save_ledger_notification(sender, instance, **kwargs):
+    print("**** Ledger signal received")
+    if instance.amount > 0:
+        print(f'{instance.account} received {abs(instance.amount)} dkk with text: "{instance.text}"')
+        Notification.objects.create(
+            customer=instance.account.customer, 
+            message=f'You received {abs(instance.amount)} dkk with text: "{instance.text}" in your account {instance.account}'
+        )
+    else:
+        print(f'{instance.account} sent {abs(instance.amount)} dkk with text: "{instance.text}"')
+        Notification.objects.create(
+            customer=instance.account.customer, 
+            message=f'You sent {abs(instance.amount)} dkk with text: "{instance.text}" from your account {instance.account}'
+            )
+
