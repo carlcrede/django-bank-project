@@ -3,7 +3,7 @@ from django.db import models, transaction
 from django.db.models.query import QuerySet
 from django.contrib.auth.models import User
 from datetime import datetime
-from bank_app.models import Account, Ledger
+from bank_app.models import Account, Ledger, Stock
 
 
 class Customer(models.Model):
@@ -14,8 +14,8 @@ class Customer(models.Model):
         GOLD = 'GOLD', 'Gold'
 
     user = models.OneToOneField(User, on_delete=models.PROTECT)
-    phone = models.CharField(max_length=8)
-    secret_for_2fa = models.CharField(max_length=32, null=True, blank=True)
+    phone = models.CharField(max_length=15)
+    secret_for_2fa = models.CharField(max_length=32, null=True)
     rank = models.CharField(
         choices=Rank.choices,
         default=Rank.BASIC,
@@ -26,7 +26,7 @@ class Customer(models.Model):
     # customer_uuid
 
     def __str__(self) -> str:
-        return f"{self.user.last_name}, {self.user.first_name} - {self.rank}"
+        return f"{self.user.last_name}, {self.user.first_name}, {self.user.username} - {self.rank}"
 
     @property
     def accounts(self) -> QuerySet:
@@ -109,3 +109,9 @@ class Customer(models.Model):
 
         return customer_account
 
+    @property
+    def stocks(self):
+        return Stock.stocks(self)
+        # customer_stocks = Stock.stocks(self)
+        # return [stock for stock in customer_stocks if stock.stock_volume > 0]
+    

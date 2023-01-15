@@ -1,8 +1,9 @@
 import secrets, os, random
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from bank_app.models import Employee, Account, Ledger, Customer
+from bank_app.models import Employee, Account, Ledger, Customer, Stock, Stocks_Ledger, Stock_Symbols
 from django.conf import settings
+from uuid import uuid4
 from faker import Faker
 fake = Faker(['da_DK'])
 Faker.seed(random.randint(0, 1_000_000))
@@ -80,3 +81,15 @@ class Command(BaseCommand):
             dummy_customer2_account2,
             'Instant millionaire',
         )
+
+
+        # Adding some stocks to Bank 
+        bank_stock_symbols = Stock_Symbols.values
+        for bank_stock_symbol in bank_stock_symbols:
+            # print("bank: ", bank_as_customer)
+            stock = Stock.save_new_stock(bank_stock_symbol, bank_as_customer)
+            transaction_uuid = uuid4()
+            print("Stock: ", stock)
+            Stocks_Ledger.objects.create(transaction_id=transaction_uuid, stock=stock, stock_volume=100)
+            # Stocks_Ledger.transfer_stock(0, 100, stock, ops_account, "bank stocks", stock, ops_account, "bank stocks", bank_stocks=True)
+            print(f"Adding some {bank_stock_symbol} stocks to Bank")
