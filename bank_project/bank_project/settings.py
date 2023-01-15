@@ -12,7 +12,7 @@ import os
 import environ
 
 environ.Env.read_env()
-BANK_REGISTRATION_NUMBER = os.environ['BANK1_REGISTRATION_NUMBER']
+BANK_REGISTRATION_NUMBER = os.environ['BANK_REGISTRATION_NUMBER']
 
 from django.core.management.commands.runserver import Command as runserver
 runserver.default_port = BANK_REGISTRATION_NUMBER
@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'bank_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / os.environ['BANK1_DB_FILE'],
+        'NAME': BASE_DIR / os.environ['BANK_DB_FILE'],
     }
 }
 
