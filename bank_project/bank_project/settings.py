@@ -159,11 +159,11 @@ EMAIL=os.environ['EMAIL']
 
 RQ_QUEUES = {
     'default': {
-        'HOST':  os.environ['REDIS_HOST'],
-        'PORT':  os.environ['REDIS_PORT'],
-        'USER': os.environ['REDIS_USER'],
+        'HOST': os.environ['REDIS_HOST'],
+        'PORT': os.environ['REDIS_PORT'],
+        'USER': 'default',
         'PASSWORD': os.environ['REDIS_PASSWORD'],
-        'DB': os.environ['REDIS_DB'],
+        'DB': 0,
         'DEFAULT_TIMEOUT': 360,
     }
 }
