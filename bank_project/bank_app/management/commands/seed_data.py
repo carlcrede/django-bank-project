@@ -13,7 +13,7 @@ class Command(BaseCommand):
         print('Adding seed data ...')
 
         # Delete all data in all tables
-        os.system("python manage.py flush")
+        os.system("python manage.py flush --no-input")
 
         # Create SuperUser
         superuser = User.objects.create_superuser(username='super', password='super', email='super@gmail.com')
