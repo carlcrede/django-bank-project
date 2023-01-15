@@ -14,7 +14,7 @@ class Command(BaseCommand):
         print('Adding seed data ...')
 
         # Delete all data in all tables
-        os.system("python manage.py flush")
+        os.system("python manage.py flush --no-input")
 
         # Create SuperUser
         superuser = User.objects.create_superuser(username='super', password='super', email='super@gmail.com')
@@ -86,7 +86,7 @@ class Command(BaseCommand):
         # Adding some stocks to Bank 
         bank_stock_symbols = Stock_Symbols.values
         for bank_stock_symbol in bank_stock_symbols:
-            print("bank: ", bank_as_customer)
+            # print("bank: ", bank_as_customer)
             stock = Stock.save_new_stock(bank_stock_symbol, bank_as_customer)
             transaction_uuid = uuid4()
             print("Stock: ", stock)

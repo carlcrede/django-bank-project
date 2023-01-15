@@ -14,7 +14,7 @@ class Customer(models.Model):
         GOLD = 'GOLD', 'Gold'
 
     user = models.OneToOneField(User, on_delete=models.PROTECT)
-    phone = models.CharField(max_length=8)
+    phone = models.CharField(max_length=15)
     secret_for_2fa = models.CharField(max_length=32, null=True)
     rank = models.CharField(
         choices=Rank.choices,

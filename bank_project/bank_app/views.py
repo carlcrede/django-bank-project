@@ -378,7 +378,7 @@ def enable_2fa(request):
     assert hasattr(
         request.user, 'customer'), 'Staff user routing customer view.'
     customer = Customer.objects.get(user=request.user)
-    customer_has_enabled_2fa = (len(str(customer.secret_for_2fa)) != 0)
+    customer_has_enabled_2fa = (customer.secret_for_2fa is not None)
     print(customer_has_enabled_2fa)
     context = {'customer': customer, 'enabled_2fa': customer_has_enabled_2fa}
     return render(request, 'bank_app/enable_2fa.html', context)
@@ -438,7 +438,7 @@ def generate_2fa(request):
             customer.save()
             os.remove(qr_file_path)
     else:
-        response = "<div>Try again</div>"
+        response = "<div>Problem generating the QR-code. Please try again later.</div>"
 
     # return render(request, 'bank_app/customer_details.html', context)
     # print(os.path.exists(qr_file_path))
@@ -493,7 +493,7 @@ def generate_email_auth(request):
         employee.secret_for_email_auth = secret_for_email_auth
         employee.n_times_logged_in_with_email_auth = 0
         employee.save()
-        response = f"<div>A confirmation email was sent to your {employee_email} mailbox.</div>"
+        response = f"<div>A confirmation email was sent to your {employee_email} mailbox.</div><div>Next time you login, you will use 2-Factor Authentication.</div>"
     else:
         response = "<div>Try again</div>"
     return HttpResponse(response, content_type="text/plain")
@@ -683,10 +683,10 @@ def stocks(request):
     # customer = Customer.objects.get(user=request.user)
     bank = Customer.default_bank_acc().customer
     available_stocks_to_buy = bank.stocks
-    print("Available stocks to buy: ", available_stocks_to_buy)
+    # print("Available stocks to buy: ", available_stocks_to_buy)
     customer = request.user.customer
     customer_stocks = customer.stocks
-    print("Customer socks: ", customer_stocks)
+    # print("Customer socks: ", customer_stocks)
     context = {'available_stocks_to_buy': available_stocks_to_buy,
                'customer_stocks': customer_stocks}
     return render(request, 'bank_app/stocks.html', context)
