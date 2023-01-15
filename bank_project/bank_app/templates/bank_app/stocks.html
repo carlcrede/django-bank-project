@@ -1,0 +1,69 @@
+{% extends 'bank_app/base.html' %}
+
+{% block content %}
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<h1>Stocks</h1>
+<hr />
+<a href="{% url 'bank_app:buy_stocks' %}">Buy Stocks</a>&nbsp;&nbsp;|&nbsp;
+<a href="{% url 'bank_app:sell_stocks' %}">Sell Stocks</a>&nbsp;&nbsp;|&nbsp;
+<hr />
+{% if error %}
+{{ error }}
+<hr />
+{% endif %}
+
+{% comment %} {'available_stocks_to_buy': available_stocks_to_buy, 'customer_stocks': customer_stocks} {% endcomment %}
+{% if available_stocks_to_buy %}
+<h2>Available Stocks to buy</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Stock Symbol</th>
+            <th>Company Name</th>
+            <th>Available Volume</th>
+            <th>Current Price Per Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for available_stock in available_stocks_to_buy %}
+            <tr>
+                <td>{{ available_stock.stock_symbol }}</td>
+                <td>{{ available_stock.stock_company_name }}</td>
+                <td>{{ available_stock.stock_volume }}</td>
+                <td>{{ available_stock.current_stock_price }}{{ available_stock.price_currency }}</td>
+                {% comment %} <td><a style="display: block;" href="{% url 'bank_app:account_details' loan.pk %}">{{ loan.pk }}</a></td> {% endcomment %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p><a href="{% url 'bank_app:index' %}">Back</a></p>
+{% else %}
+<h4>We are not selling stocks at the moment. Sorry for inconvenience.</h4>
+{% endif %}
+{% if customer_stocks %}
+<h2>Your Stocks</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Stock Symbol</th>
+            <th>Company Name</th>
+            <th>Available Volume</th>
+            <th>Current Price Per Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer_stock in customer_stocks %}
+            <tr>
+                <td>{{ customer_stock.stock_symbol }}</td>
+                <td>{{ customer_stock.stock_company_name }}</td>
+                <td>{{ customer_stock.stock_volume }}</td>
+                <td>{{ customer_stock.current_stock_price }}{{ customer_stock.price_currency }}</td>
+                {% comment %} <td><a style="display: block;" href="{% url 'bank_app:account_details' loan.pk %}">{{ loan.pk }}</a></td> {% endcomment %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h4>You don't have an bought stocks yet. You are welcome to buy some!</h4>
+{% endif %}
+{% endblock %}

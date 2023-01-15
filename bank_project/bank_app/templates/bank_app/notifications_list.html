@@ -1,0 +1,78 @@
+{% load static %}
+{% block content %}
+
+<article>
+    <table>
+        <thead>
+            <tr>
+                <th>Today</th>
+            </tr>
+        </thead>
+        {% for notification in todays_notifications %}
+        
+        <tbody>
+            <tr>
+                <td>
+                    <form action="{% url 'bank_app:toggle_read_notification' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                        {% if notification.is_read %}
+                        <input type="image" src="{% static 'bank_app/envelope_open.png' %}" 
+                        alt="Read" class="btTxt submit" width="42" height="42" id="saveForm" />
+                        {% else %}
+                        <input type="image" src="{% static 'bank_app/envelope_closed.png' %}"
+                        alt="Unread" class="btTxt submit" width="42" height="42" id="saveForm" />
+                        {% endif %}
+                    </form>
+                </td>
+                {% if notification.is_read %}
+                <td>{{ notification.message }}</td>
+                {% else %}
+                <td><b>{{ notification.message }}</b></td>
+                {% endif %}
+                {% if notification.was_received_today %}
+                <td>Today at {{ notification.timestamp|date:"P" }}</td>
+                {% else %}
+                <td>{{ notification.timestamp|date:"M d, P" }}</td>
+                {% endif %}
+        {% endfor %}
+        </tbody>
+
+        <thead>
+            <tr>
+                <th>Earlier</th>
+            </tr>
+        </thead>
+        {% for notification in earlier_notifications %}
+        
+        <tbody>
+            <tr>
+                <td>
+                    <form action="{% url 'bank_app:toggle_read_notification' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                        {% if notification.is_read %}
+                        <input type="image" src="{% static 'bank_app/envelope_open.png' %}" 
+                        alt="Read" class="btTxt submit" width="42" height="42" id="saveForm" />
+                        {% else %}
+                        <input type="image" src="{% static 'bank_app/envelope_closed.png' %}"
+                        alt="Unread" class="btTxt submit" width="42" height="42" id="saveForm" />
+                        {% endif %}
+                    </form>
+                </td>
+                {% if notification.is_read %}
+                <td>{{ notification.message }}</td>
+                {% else %}
+                <td><b>{{ notification.message }}</b></td>
+                {% endif %}
+                {% if notification.was_received_today %}
+                <td>Today at {{ notification.timestamp|date:"P" }}</td>
+                {% else %}
+                <td>{{ notification.timestamp|date:"M d, P" }}</td>
+                {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% endblock %}

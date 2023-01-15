@@ -1,0 +1,35 @@
+{% extends "bank_app/base.html" %}
+
+{% block content %}
+
+{% include 'bank_app/customer_dashboard_nav.html' %}
+<h1>Loans</h1>
+<hr />
+<a href="{% url 'bank_app:get_loan' %}">Get loan</a>&nbsp;&nbsp;|&nbsp;
+<a href="{% url 'bank_app:pay_loan' %}">Pay loan</a>&nbsp;&nbsp;|&nbsp;
+<hr />
+    {% if loans %}
+        <article>
+            <h2>Your loans</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Loan Number</th>
+                        <th>Loan Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                        <tr>
+                            <td><a style="display: block;" href="{% url 'bank_app:account_details' loan.pk %}">{{ loan.pk }}</a></td>
+                            <td>{{ loan.name }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </article>
+    {% else %}
+            <h4>You don't have any loans yet. Good for you!</h4>
+    {% endif %}
+
+{% endblock %}
