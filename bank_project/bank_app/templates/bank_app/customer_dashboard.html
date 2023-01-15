@@ -27,26 +27,4 @@
     </table>
 </article>
 
-{% if user.customer.rank != "BASIC"%}
-    <article>
-        <h2>My Loans</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Account Number</th>
-                    <th>Account Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for loan in loans %}
-                    <tr>
-                        <td><a style="display: block;" href="{% url 'bank_app:account_details' loan.pk %}">{{ loan.pk }}</a></td>
-                        <td>{{ loan.name }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </article>
-{% endif %}
-
 {% endblock %}

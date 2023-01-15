@@ -30,7 +30,7 @@ class Account(models.Model):
             .exclude(Q(status=TransferStatus.COMPLETED) | Q(status=TransferStatus.FAILED))
             .aggregate(models.Sum('amount'))['amount__sum']
         or 0) * -1
-        return sum([actual_balance, sent_transactions])
+        return round(sum([actual_balance, sent_transactions]), 2)
 
     @property
     def movements(self) -> QuerySet:

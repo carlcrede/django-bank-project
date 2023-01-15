@@ -21,8 +21,13 @@
         <table>
             <thead>
                 <tr>
+                    {% if not account.is_loan %}
                     <th>Account Number</th>
                     <th>Account Name</th>
+                    {% else %}
+                        <th>Loan Number</th>
+                        <th>Loan Name</th>
+                    {% endif %}
                     <th>Balance</th>
                     <th>Created</th>
                 </tr>
@@ -36,7 +41,11 @@
                 </tr>
             </tbody>
         </table>
-        <p><a href="{% url 'bank_app:index' %}">Back</a></p>
+        {% if not account.is_loan %}
+            <p><a href="{% url 'bank_app:index' %}">Back</a></p>
+        {% else %}
+            <p><a href="{% url 'bank_app:loans' %}">Back</a></p>
+        {% endif %}
     </article>
 
     <article>
