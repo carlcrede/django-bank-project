@@ -8,6 +8,8 @@
 __pycache__/
 local_settings.py
 db.sqlite3
+db1.sqlite3
+db2.sqlite3
 *.sqlite3
 db.sqlite3-journal
 media
@@ -257,3 +259,5 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/django,python
 
 act.sh
+bank_project/db1.sqlite3
+bank_project/db2.sqlite3

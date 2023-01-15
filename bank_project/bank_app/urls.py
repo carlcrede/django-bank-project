@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .api import ExternalTransferList, ExternalTransferDetail, ExternalTransferConfirm
+from .api import ExternalTransferComplete, ExternalTransferFailed, ExternalTransferList, ExternalTransferDetail, ExternalTransferConfirm
 app_name = 'bank_app'
 
 urlpatterns = [
@@ -36,5 +36,6 @@ urlpatterns = [
    path('stocks/', views.stocks, name='stocks'), # to access it: localhost:8000/bank/delete_recurring_payment
    path('buy_stocks/', views.buy_stocks, name='buy_stocks'), # to access it: localhost:8000/bank/buy_stocks
    path('sell_stocks/', views.sell_stocks, name='sell_stocks'), # to access it: localhost:8000/bank/sell_stocks
-   # path('buy_stocks/<str:stock_symbol>', views.buy_stocks, name='buy_stocks'), # to access it: localhost:8000/bank/delete_recurring_payment
+   path('api/v1/complete/<uuid:pk>', ExternalTransferComplete.as_view()),
+   path('api/v1/failed/<uuid:pk>', ExternalTransferFailed.as_view()),
 ]

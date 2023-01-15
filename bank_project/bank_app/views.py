@@ -153,7 +153,7 @@ def make_external_transfer(request):
                 data = ExternalTransferSerializer(t)
                 ext_t_acc = Customer.external_transactions_acc()
                 django_rq.enqueue(
-                    ExternalTransfer.transfer, data, t, ext_t_acc, debit_account,
+                    ExternalTransfer.reserve_transfer, data, t, ext_t_acc, debit_account,
                     retry=Retry(max=3, interval=5),
                     on_failure=transfer_failed,
                 )
