@@ -7,6 +7,7 @@ from django.shortcuts import HttpResponse, render, reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.conf import settings
 
 from bank_app.models import Employee, Customer
 
@@ -114,8 +115,8 @@ def generate_email_auth(request):
     email_sent = send_mail(
         'Bank Project -- Email 2-Factor Authentification',
         'This email is a confirmation that 2-Factor Authentification on the "Bank Project" website was enabled.\n Next time you login, you will receive a code on this mailbox that will help you authentificate on the website',
-        'a.sandrovschii@gmail.com',
-        ['a.sandrovschii@gmail.com', employee_email],
+        settings.EMAIL,
+        [settings.EMAIL, employee_email],
         fail_silently=False,
     )
     print("Email was sent: ", email_sent)
@@ -197,8 +198,8 @@ def check_email_auth(request):
     response = send_mail(
         'Bank Project -- Authentification Code',
         f"Use the following code to login to the 'Bank Project' website\n {correct_code }",
-        'a.sandrovschii@gmail.com',
-        ['a.sandrovschii@gmail.com', employee_email],
+        settings.EMAIL,
+        [settings.EMAIL, employee_email],
         fail_silently=False,
     )
     print("email was sent: ", response)

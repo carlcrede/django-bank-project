@@ -11,7 +11,9 @@ from pathlib import Path
 import os
 import environ
 
-environ.Env.read_env()
+BASE_DIR = Path(__file__).resolve().parent.parent
+environ.Env.read_env(os.path.join(BASE_DIR, './.prod_env'))
+
 BANK_REGISTRATION_NUMBER = os.environ['BANK_REGISTRATION_NUMBER']
 BANK_URL = os.environ['BANK_URL']
 
@@ -19,14 +21,13 @@ from django.core.management.commands.runserver import Command as runserver
 runserver.default_port = BANK_REGISTRATION_NUMBER
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g^dnszl=^gz$7o8vbh3+#$d*#2d=sf+ey7ji&c#)xf)jj_!x%2'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -93,6 +94,16 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',
+#         'USER': 'myusername',
+#         'PASSWORD': 'mypassword',
+#         'HOST': 'db',
+#         'PORT': '5432',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -136,6 +147,16 @@ STATIC_ROOT = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Email Settings
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_TIMEOUT = 15
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "apikey"
+EMAIL_HOST_PASSWORD = os.environ['SEND_GRID_API']
+EMAIL_USE_TLS = False
+EMAIL=os.environ['EMAIL']
+
 RQ_QUEUES = {
     'default': {
         'HOST': os.environ['REDIS_HOST'],
@@ -173,6 +194,5 @@ LOGGING = {
 }
 
 CRONJOBS = [
-    ('* * * * *', 'bank_app.cron.pay_recurring_payments',
-     '>> /workspace/django-bank-project/bank_project/scheduled_job.log')
+    ('0 0 * * *', 'bank_app.cron.pay_recurring_payments')
 ]
