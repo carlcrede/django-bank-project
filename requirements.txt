@@ -43,4 +43,4 @@ toml==0.10.2
 tzdata==2022.7
 urllib3==1.26.13
 webencodings==0.5.1
-yfinance==0.2.3
+yfinance==0.2.4

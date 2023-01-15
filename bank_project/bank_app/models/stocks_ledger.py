@@ -19,7 +19,7 @@ class Stocks_Ledger(models.Model):
         # f"selling {stock_symbol} stocks"
         with transaction.atomic():
             if  bank_stocks or (stock_of_seller.stock_volume >= stock_volume_to_buy):
-                amount_to_transfer_for_stock_purchase = stock_volume_to_buy * price_at_purchase
+                amount_to_transfer_for_stock_purchase = round(stock_volume_to_buy * price_at_purchase, 2)
                 Ledger.transfer(amount_to_transfer_for_stock_purchase, stock_buyer_account, stock_buyer_text, stock_seller_account, stock_seller_text)
                 cls(transaction_id=uuid, stock_volume=-stock_volume_to_buy,stock=stock_of_seller).save()
                 cls(transaction_id=uuid, stock_volume=stock_volume_to_buy, stock=stock_of_buyer).save()

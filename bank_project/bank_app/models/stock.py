@@ -13,7 +13,7 @@ class Stock(models.Model):
     stock_uuid = models.UUIDField()
     stock_company_name = models.CharField(max_length=30)
     stock_symbol = models.CharField(
-        max_length=8, choices=Stock_Symbols.choices)
+        max_length=15, choices=Stock_Symbols.choices)
     price_currency = models.CharField(max_length=3)
     belongs_to = models.ForeignKey('Customer', on_delete=models.CASCADE)
     # created_at = models.DateTimeField(auto_now_add=True)
@@ -57,10 +57,11 @@ class Stock(models.Model):
 
     @property
     def current_stock_price(self):
-        # ticker = yf.Ticker(self.stock_symbol)
-        # return ticker.info["currentPrice"]
-        ticker = Stock_Symbols.get_ticker(self.stock_symbol)
-        return ticker["info"]["currentPrice"]
+        ticker = yf.Ticker(self.stock_symbol)
+        current_price = ticker.info["currentPrice"]
+        return round(current_price, 2)
+        # ticker = Stock_Symbols.get_ticker(self.stock_symbol)
+        # return ticker["info"]["currentPrice"]
 
     @property
     def stock_volume(self):
@@ -93,10 +94,10 @@ class Stock(models.Model):
     @classmethod
     def save_new_stock(cls, stock_symbol, customer):
         uuid = uuid4()
-        # ticker = yf.Ticker(stock_symbol)
+        ticker = yf.Ticker(stock_symbol)
         # print(ticker.info)
-        # ticker = available_stocks["NOVOb"]
         # print(ticker["info"]["longName"])
-        ticker = Stock_Symbols.get_ticker(stock_symbol)
-        # return cls(stock_uuid=uuid, stock_company_name= ticker.info["longName"], stock_symbol=ticker.info["symbol"], price_currency=ticker.info["currency"], belongs_to=customer).save()
-        return cls.objects.create(stock_uuid=uuid, stock_company_name=ticker["info"]["longName"], stock_symbol=ticker["info"]["symbol"], price_currency=ticker["info"]["currency"], belongs_to=customer)
+        return cls.objects.create(stock_uuid=uuid, stock_company_name= ticker.info["longName"], stock_symbol=ticker.info["symbol"], price_currency=ticker.info["currency"], belongs_to=customer)
+        
+        # ticker = Stock_Symbols.get_ticker(stock_symbol)
+        # return cls.objects.create(stock_uuid=uuid, stock_company_name=ticker["info"]["longName"], stock_symbol=ticker["info"]["symbol"], price_currency=ticker["info"]["currency"], belongs_to=customer)
