@@ -44,7 +44,7 @@ class Employee(models.Model):
         user = User.objects.get(username=customer_username)
         customer = Customer.objects.get(user=user)
         customer.rank = new_rank
-        customer.save()
+        customer.save(update_fields=['rank'])
         return customer
 
     # def __str__(self):

@@ -5,8 +5,14 @@
     <a href="{% url 'bank_app:make_external_transfer' %}">Make External Transfer</a>&nbsp;&nbsp;|&nbsp;
     <a href="{% url 'bank_app:recurring_payments' %}">Recurring Payments</a>&nbsp;&nbsp;|&nbsp;
     {% if user.customer.rank != "BASIC"%}
-        <a href="{% url 'bank_app:get_loan' %}">Get loan</a>&nbsp;&nbsp;|&nbsp;
-        <a href="{% url 'bank_app:pay_loan' %}">Pay loan</a>&nbsp;&nbsp;|&nbsp;
+    <a href="{% url 'bank_app:get_loan' %}">Get loan</a>&nbsp;&nbsp;|&nbsp;
+    <a href="{% url 'bank_app:pay_loan' %}">Pay loan</a>&nbsp;&nbsp;|&nbsp;
     {% endif %}
+    <a href="{% url 'bank_app:notifications' %}" id="notifications_tab">
+        Notifications
+        {% if user.customer.unread_notifications_count > 0 %}
+        <font color="red" >({{ user.customer.unread_notifications_count }})</font>
+        {% endif %}
+    </a>&nbsp;&nbsp;|&nbsp;
 </nav>
 <hr>

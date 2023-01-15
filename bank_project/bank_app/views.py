@@ -1,4 +1,9 @@
-import pyotp, os, base64, subprocess, httpx, django_rq
+import pyotp
+import os
+import base64
+import subprocess
+import httpx
+import django_rq
 
 from rq import Retry
 from django.shortcuts import HttpResponse, get_object_or_404, render, reverse
@@ -11,7 +16,7 @@ from django.db import transaction
 
 from .errors import InsufficientFunds, NotEverythingProvided
 from .forms import ExternalTransferForm, TransferForm, PayLoanForm, RecurringPaymentForm
-from bank_app.models import Employee, Account, Ledger, Customer, ExternalTransfer, Recurring_Payment
+from bank_app.models import Employee, Account, Ledger, Customer, ExternalTransfer, Recurring_Payment, Notification
 from bank_app.models.external_transfer import transfer_failed
 from .serializers import ExternalTransferSerializer
 
@@ -124,16 +129,19 @@ def make_transfer(request):
     }
     return render(request, 'bank_app/make_transfer.html', context)
 
+
 @login_required
 def make_external_transfer(request):
-    assert hasattr(request.user, 'customer'), 'Staff user routing customer view.'
+    assert hasattr(
+        request.user, 'customer'), 'Staff user routing customer view.'
 
     if request.method == 'POST':
         form = ExternalTransferForm(request.POST)
         form.fields['debit_account'].queryset = request.user.customer.accounts
         if form.is_valid():
             amount = form.cleaned_data['amount']
-            debit_account = Account.objects.get(pk=form.cleaned_data['debit_account'].pk)
+            debit_account = Account.objects.get(
+                pk=form.cleaned_data['debit_account'].pk)
             debit_text = form.cleaned_data['debit_text']
             credit_account = form.cleaned_data['credit_account']
             credit_text = form.cleaned_data['credit_text']
@@ -171,12 +179,13 @@ def make_external_transfer(request):
                 return render(request, 'bank_app/error.html', context)
     else:
         form = ExternalTransferForm()
-    
+
     form.fields['debit_account'].queryset = request.user.customer.accounts
     context = {
         'form': form
     }
     return render(request, 'bank_app/make_external_transfer.html', context)
+
 
 @login_required
 def get_loan(request):
@@ -630,10 +639,11 @@ def update_recurring_payment(request, pk):
                 print("pay_once_per_n_days", pay_once_per_n_days)
                 recurring_payment = Recurring_Payment.objects.get(pk=pk)
                 raise NotEverythingProvided('All fields have to be provided')
-            
+
             if (datetime.strptime(start_date, '%Y-%m-%d') > datetime.strptime(end_date, '%Y-%m-%d')):
-                raise NotEverythingProvided('Start Date can\'t be after End Date')
-                
+                raise NotEverythingProvided(
+                    'Start Date can\'t be after End Date')
+
             recurring_payment.update_recurring_payment(
                 text=text, amount=amount, start_date=start_date, end_date=end_date, pay_once_per_n_days=pay_once_per_n_days)
             # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
@@ -659,3 +669,25 @@ def delete_recurring_payment(request, pk):
     recurring_payment = Recurring_Payment.objects.get(pk=pk)
     recurring_payment.delete()
     return recurring_payments(request)
+
+
+@login_required
+def notifications(request):
+    notifications = request.user.customer.notifications
+    context = {'notifications': notifications}
+    return render(request, 'bank_app/notifications.html', context)
+
+@login_required
+def notifications_list(request):
+    notifications = request.user.customer.notifications
+    context = {'notifications': notifications}
+    return render(request, 'bank_app/notifications_list.html', context)
+
+@login_required
+def toggle_read_notification(request):
+    id = request.POST['notification_id']
+    print("toggle_read_notification id: ", id)
+    Notification.toggle_read(request.POST['notification_id'])
+    notifications = request.user.customer.notifications
+    context = {'notifications': notifications}
+    return render(request, 'bank_app/notifications.html', context)

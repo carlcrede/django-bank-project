@@ -34,4 +34,7 @@ urlpatterns = [
    path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
    path('api/v1/complete/<uuid:pk>', ExternalTransferComplete.as_view()),
    path('api/v1/failed/<uuid:pk>', ExternalTransferFailed.as_view()),
-]
+   path('notifications/', views.notifications, name='notifications'),
+   path('notifications_list/', views.notifications_list, name='notifications_list'),
+   path('toggle_read_notification/', views.toggle_read_notification, name='toggle_read_notification'),
+   ]
