@@ -10,6 +10,7 @@ urlpatterns = [
    path('account_details/<str:ban>/', views.account_details, name='account_details'),
    path('make_transfer/', views.make_transfer, name='make_transfer'),
    path('make_external_transfer/', views.make_external_transfer, name='make_external_transfer'),
+   path('loans/', views.loans, name='loans'),
    path('get_loan/', views.get_loan, name='get_loan'),
    path('pay_loan/', views.pay_loan, name='pay_loan'),
    path('transaction_details/<uuid:transaction_id>', views.transaction_details, name='transaction_details'),
@@ -32,6 +33,9 @@ urlpatterns = [
    path('api/v1/transfer', ExternalTransferList.as_view()),
    path('api/v1/transfer/<uuid:pk>', ExternalTransferDetail.as_view()),
    path('api/v1/confirm/<uuid:pk>', ExternalTransferConfirm.as_view()),
+   path('stocks/', views.stocks, name='stocks'), # to access it: localhost:8000/bank/delete_recurring_payment
+   path('buy_stocks/', views.buy_stocks, name='buy_stocks'), # to access it: localhost:8000/bank/buy_stocks
+   path('sell_stocks/', views.sell_stocks, name='sell_stocks'), # to access it: localhost:8000/bank/sell_stocks
    path('api/v1/complete/<uuid:pk>', ExternalTransferComplete.as_view()),
    path('api/v1/failed/<uuid:pk>', ExternalTransferFailed.as_view()),
 ]

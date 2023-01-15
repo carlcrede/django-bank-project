@@ -11,7 +11,7 @@ class Employee(models.Model):
     secret_for_email_auth = models.CharField(
         max_length=32, null=True, blank=True)
     n_times_logged_in_with_email_auth = models.IntegerField(
-        null=True, blank=True)
+        null=True)
 
     @classmethod
     def create_employee(cls, fname, lname, email, uname, passwd):
