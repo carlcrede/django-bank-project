@@ -8,5 +8,11 @@
     {% if user.customer.rank != "BASIC" %}
         <a href="{% url 'bank_app:loans' %}">Loans</a>&nbsp;&nbsp;|&nbsp;
     {% endif %}
+    <a href="{% url 'bank_app:notifications' %}" id="notifications_tab">
+        Notifications
+        {% if user.customer.unread_notifications_count > 0 %}
+        <font color="red" >({{ user.customer.unread_notifications_count }})</font>
+        {% endif %}
+    </a>&nbsp;&nbsp;|&nbsp;
 </nav>
 <hr>

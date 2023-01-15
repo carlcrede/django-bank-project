@@ -38,4 +38,7 @@ urlpatterns = [
    path('sell_stocks/', views.sell_stocks, name='sell_stocks'), # to access it: localhost:8000/bank/sell_stocks
    path('api/v1/complete/<uuid:pk>', ExternalTransferComplete.as_view()),
    path('api/v1/failed/<uuid:pk>', ExternalTransferFailed.as_view()),
-]
+   path('notifications/', views.notifications, name='notifications'),
+   path('notifications_list/', views.notifications_list, name='notifications_list'),
+   path('toggle_read_notification/', views.toggle_read_notification, name='toggle_read_notification'),
+   ]

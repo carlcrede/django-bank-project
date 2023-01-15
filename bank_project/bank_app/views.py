@@ -1,4 +1,9 @@
-import pyotp, os, base64, subprocess, httpx, django_rq
+import pyotp
+import os
+import base64
+import subprocess
+import httpx
+import django_rq
 
 from rq import Retry
 from django.shortcuts import HttpResponse, get_object_or_404, render, reverse
@@ -11,7 +16,7 @@ from django.db import transaction
 
 from .errors import InsufficientFunds, NotEverythingProvided
 from .forms import ExternalTransferForm, TransferForm, PayLoanForm, RecurringPaymentForm, StockForm
-from bank_app.models import Employee, Account, Ledger, Customer, ExternalTransfer, Recurring_Payment, Stock
+from bank_app.models import Employee, Account, Ledger, Customer, ExternalTransfer, Recurring_Payment, Stock, Notification
 from bank_app.models.external_transfer import transfer_failed
 from .serializers import ExternalTransferSerializer
 
@@ -125,9 +130,11 @@ def make_transfer(request):
     return render(request, 'bank_app/make_transfer.html', context)
 
 
+
 @login_required
 def make_external_transfer(request):
     assert hasattr(
+        
         request.user, 'customer'), 'Staff user routing customer view.'
 
     if request.method == 'POST':
@@ -189,6 +196,7 @@ def loans(request):
     customer_loans = request.user.customer.loans
     context = {'loans': customer_loans }
     return render(request, 'bank_app/loans.html', context)
+
 
 @login_required
 def get_loan(request):
@@ -644,8 +652,9 @@ def update_recurring_payment(request, pk):
                 raise NotEverythingProvided('All fields have to be provided')
 
             if (datetime.strptime(start_date, '%Y-%m-%d') > datetime.strptime(end_date, '%Y-%m-%d')):
-                raise NotEverythingProvided('Start Date can\'t be after End Date')
-                
+                raise NotEverythingProvided(
+                    'Start Date can\'t be after End Date')
+
             recurring_payment.update_recurring_payment(
                 text=text, amount=amount, start_date=start_date, end_date=end_date, pay_once_per_n_days=pay_once_per_n_days)
             # NOT SURE HOW IT WORKS IF account_details doesn't have pk field -- HAVE TO TEST
@@ -795,3 +804,25 @@ def sell_stocks(request, stock_symbol=None):
         'form': form,
     }
     return render(request, 'bank_app/sell_stocks.html', context)
+
+
+@login_required
+def notifications(request):
+    notifications = request.user.customer.notifications
+    context = {'notifications': notifications}
+    return render(request, 'bank_app/notifications.html', context)
+
+@login_required
+def notifications_list(request):
+    notifications = request.user.customer.notifications
+    context = {'notifications': notifications}
+    return render(request, 'bank_app/notifications_list.html', context)
+
+@login_required
+def toggle_read_notification(request):
+    id = request.POST['notification_id']
+    print("toggle_read_notification id: ", id)
+    Notification.toggle_read(request.POST['notification_id'])
+    notifications = request.user.customer.notifications
+    context = {'notifications': notifications}
+    return render(request, 'bank_app/notifications.html', context)
