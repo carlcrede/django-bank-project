@@ -155,6 +155,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = "apikey"
 EMAIL_HOST_PASSWORD = os.environ['SEND_GRID_API']
 EMAIL_USE_TLS = False
+EMAIL=os.environ['EMAIL']
 
 RQ_QUEUES = {
     'default': {
