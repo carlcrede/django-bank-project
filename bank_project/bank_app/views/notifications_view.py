@@ -8,12 +8,19 @@ def notifications(request):
     notifications = request.user.customer.notifications
     context = {'notifications': notifications}
     return render(request, 'bank_app/notifications.html', context)
+import datetime
 
 @login_required
 def notifications_list(request):
-    notifications = request.user.customer.notifications
-    context = {'notifications': notifications}
+    notifications = request.user.customer.notifications.order_by('-timestamp')
+    todays_notifications = notifications.filter(timestamp__date=datetime.date.today())
+    earlier_notifications = notifications.exclude(timestamp__date=datetime.date.today())
+    context = {
+        'todays_notifications': todays_notifications,
+        'earlier_notifications': earlier_notifications
+    }
     return render(request, 'bank_app/notifications_list.html', context)
+
 
 @login_required
 def toggle_read_notification(request):
