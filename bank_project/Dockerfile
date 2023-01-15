@@ -15,8 +15,4 @@ COPY . /app
 
 COPY ./entrypoint.sh /
 
-# RUN groupadd -r user && useradd -r -g user user
-# USER user
-# CMD ["cat","db.sqlite3"]
-
 ENTRYPOINT ["sh", "/entrypoint.sh"]

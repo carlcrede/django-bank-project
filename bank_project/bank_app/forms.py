@@ -133,4 +133,4 @@ class StockForm(forms.Form):
         # if self.buyer_account.get('amount') <= 0:
         #     self._errors['amount'] = self.error_class(['Amount must be positive.'])
 
-        # return self.cleaned_data
+        return self.cleaned_data
