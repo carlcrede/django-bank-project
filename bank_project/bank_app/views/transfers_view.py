@@ -69,6 +69,8 @@ def make_external_transfer(request):
             credit_account = form.cleaned_data['credit_account']
             credit_text = form.cleaned_data['credit_text']
             to_bank = form.cleaned_data['to_bank']
+            bank_url = form.cleaned_data['bank_url']
+            print(bank_url)
             try:
                 with transaction.atomic():
                     t = ExternalTransfer.create(
@@ -81,7 +83,7 @@ def make_external_transfer(request):
                 data = ExternalTransferSerializer(t)
                 ext_t_acc = Customer.external_transactions_acc()
                 django_rq.enqueue(
-                    ExternalTransfer.reserve_transfer, data, t, ext_t_acc, debit_account,
+                    ExternalTransfer.reserve_transfer, data, t, ext_t_acc, debit_account, bank_url,
                     retry=Retry(max=3, interval=5),
                     on_failure=transfer_failed,
                 )

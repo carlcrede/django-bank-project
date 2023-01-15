@@ -13,6 +13,7 @@ import environ
 
 environ.Env.read_env()
 BANK_REGISTRATION_NUMBER = os.environ['BANK_REGISTRATION_NUMBER']
+BANK_URL = os.environ['BANK_URL']
 
 from django.core.management.commands.runserver import Command as runserver
 runserver.default_port = BANK_REGISTRATION_NUMBER
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'bank_app',
     'login_app',
     'django_rq',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -136,10 +138,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 RQ_QUEUES = {
     'default': {
-        'HOST': 'redis-10265.c250.eu-central-1-1.ec2.cloud.redislabs.com',
-        'PORT': '10265',
+        'HOST': os.environ['REDIS_HOST'],
+        'PORT': os.environ['REDIS_PORT'],
         'USER': 'default',
-        'PASSWORD': 'n1lzL8tmFigDpW0Hzem8z3ebPnMLRUIw',
+        'PASSWORD': os.environ['REDIS_PASSWORD'],
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
     }

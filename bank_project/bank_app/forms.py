@@ -2,7 +2,8 @@ from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Customer, Account, Stock
 from datetime import datetime
-
+from .util import get_external_bank_url
+from django.conf import settings
 
 class TransferForm(forms.Form):
     amount = forms.DecimalField(label='Amount', max_digits=10)
@@ -26,10 +27,21 @@ class TransferForm(forms.Form):
         return self.cleaned_data
 
 class ExternalTransferForm(TransferForm):
-    to_bank = forms.CharField(label='Bank registration number', max_length=5)
+    to_bank = forms.CharField(label='Bank registration number', max_length=4)
     def clean(self):
         if self.cleaned_data.get('amount') <= 0:
             self._errors['amount'] = self.error_class(['Amount must be positive.'])
+
+        registration_number = self.cleaned_data.get('to_bank')
+
+        if registration_number == settings.BANK_REGISTRATION_NUMBER:
+            self._errors['to_bank'] = self.error_class(['You must enter the registration number of another bank'])
+
+        bank_url = get_external_bank_url(registration_number=registration_number)
+        if not bank_url:
+            self._errors['to_bank'] = self.error_class(['Invalid bank registration number'])
+
+        self.cleaned_data['bank_url'] = bank_url
 
         return self.cleaned_data
 
