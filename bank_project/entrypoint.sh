@@ -21,6 +21,7 @@ elif [ "$RTE" = "prod" ]; then
 
     python manage.py check --deploy
     python manage.py collectstatic --noinput
-    gunicorn dj_deploy.asgi:application -b 0.0.0.0:8080 -k uvicorn.workers.UvicornWorker
+    gunicorn bank_project.asgi:application -b 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker
 
 fi
+
