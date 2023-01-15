@@ -12,7 +12,8 @@ import os
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-environ.Env.read_env(os.path.join(BASE_DIR, './.prod_env'))
+
+environ.Env.read_env()
 
 BANK_REGISTRATION_NUMBER = os.environ['BANK_REGISTRATION_NUMBER']
 BANK_URL = os.environ['BANK_URL']
