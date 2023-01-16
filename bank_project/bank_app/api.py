@@ -104,7 +104,7 @@ class ExternalTransferFailed(APIView):
         external_transfer = self.get_object(pk=pk)
         try:
             if (
-                external_transfer.status == TransferStatus.RESERVED or
+                external_transfer.status == TransferStatus.COMPLETED or
                 external_transfer.status == TransferStatus.CONFIRMED
             ):
                 with transaction.atomic():
@@ -118,6 +118,11 @@ class ExternalTransferFailed(APIView):
                     )
                     external_transfer.status = TransferStatus.FAILED
                     external_transfer.save()
+                return Response(status=status.HTTP_200_OK)
+            
+            if external_transfer.status == TransferStatus.RESERVED:
+                external_transfer.status = TransferStatus.FAILED
+                external_transfer.save()
                 return Response(status=status.HTTP_200_OK)
         except Exception as exc:
             return Response(exc, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

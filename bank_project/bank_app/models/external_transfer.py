@@ -119,15 +119,15 @@ def transfer_failed(job, connection, type, value, traceback):
     customer_acc = job.args[3]
     bank_url = job.args[4]
    
-    if (
-        external_transfer.status == TransferStatus.RESERVED or 
-        external_transfer.status == TransferStatus.CONFIRMED
-    ):
+    if external_transfer.status == TransferStatus.RESERVED:
         external_transfer.status = TransferStatus.FAILED
         external_transfer.save()
         httpx.get(f'http://{bank_url}/bank/api/v1/failed/{external_transfer.pk}')
 
-    if external_transfer.status == TransferStatus.COMPLETED:
+    if (
+        external_transfer.status == TransferStatus.COMPLETED or
+        external_transfer.status == TransferStatus.CONFIRMED
+    ):
         try:
             with transaction.atomic():
                 Ledger.transfer(
